@@ -12,22 +12,6 @@
 typedef unsigned int uint32
 typedef unsigned char uint8
 
-
-class Chunk
-{
-  public:
-      Chunk(uint32 size);
-      ~Chunk();
-      int write(void *dest);
-      int read(void *src);
-
-  private:
-      Chunk *m_prev;
-      Chunk *m_next;
-      uint32 datasize;
-      int free;
-};
-
 class MemoryPool
 {
   public:
@@ -68,6 +52,9 @@ class MemoryPool
     unsigned    m_boundsCheck : 1;
 
 };
+
+const uint8  MemoryPool::s_startBound[16] = {'[','B','l','o','c','k','.','.','.','.','S','t','a','r','t',']'};
+const uint8  MemoryPool::s_endBound[16]   = {'[','B','l','o','c','k','.','.','.','.','.','.','E','n','d',']'};
 
 #endif
 
