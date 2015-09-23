@@ -1,6 +1,9 @@
+#include "StandardMemoryPool.hpp"
+#include<iostream>
+
 void *StandardMemoryPool :: allocate(uint32 size)
 {
-  uint32 requireSize = size + sizeof(Chunk);
+  uint32 requiredSize = size + sizeof(Chunk);
 
   if(m_boundsCheck)
     requiredSize += s_boundsCheckSize *2;
@@ -60,14 +63,14 @@ void StandardMemoryPool :: free(void* ptr)
 {
     // is a valid node?
     if(!ptr) 
-        return;
+      return;
     
-    Chunk* block = (Chunk*)((uint*)ptr - sizeof(Chunk) );
+    Chunk* block = (Chunk*)((uint8 *)ptr - sizeof(Chunk));
 
     ASSERT(block->m_free == false, "This block is already free");
 
-    if(block->m_free) 
-        return;
+    if(block->m_free)
+      return;
 
     uint32 fullBlockSize = block->m_userdataSize + sizeof(Chunk) + (m_boundsCheck == 1 ? s_boundsCheckSize * 2 : 0);
     
@@ -107,7 +110,7 @@ void StandardMemoryPool :: free(void* ptr)
       }
   }
   else
-  // If next node is free lets merge it to the current one
+    // If next node is free lets merge it to the current one
   if(block->m_next && block->m_next->m_free)
   {
     headBlock = block;
@@ -122,7 +125,7 @@ void StandardMemoryPool :: free(void* ptr)
   uint32* freeBlockStart = (uint32*)headBlock;
 
   if(m_trashOnFree)
-    memset( m_boundsCheck == 1 ? freeBlockStart - s_boundsCheckSize : freeBlockStart, s_trashOnFreeSignature, fullBlockSize );
+    memset(m_boundsCheck == 1 ? freeBlockStart - s_boundsCheckSize : freeBlockStart, s_trashOnFreeSignature, fullBlockSize);
 
   uint32 freeUserDataSize = fullBlockSize - sizeof(Chunk);
 
@@ -152,10 +155,10 @@ bool StandardMemoryPool :: integrityCheck() const
 
     while(temp != NULL)
     {
-      if(memcmp(((BYTE*)temp) - s_boundsCheckSize, s_startBound, s_boundsCheckSize) != 0)
+      if(memcmp(((uint8*)temp) - s_boundsCheckSize, s_startBound, s_boundsCheckSize) != 0)
         return false; 
 
-      if(memcmp(((BYTE*)temp) + sizeof(Chunk) + temp->m_userdataSize, s_endBound, s_boundsCheckSize) != 0)
+      if(memcmp(((uint8*)temp) + sizeof(Chunk) + temp->m_userdataSize, s_endBound, s_boundsCheckSize) != 0)
         return false; 
 
       temp = temp->m_next;
@@ -167,7 +170,7 @@ bool StandardMemoryPool :: integrityCheck() const
 /**
 *	\brief		Dump the memory state to file
 */
-void StandardMemoryPool :: dumpToFile(const std::string& fileName, const DWORD itemsPerLine) const
+void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const
 {
   FILE* f = NULL;
   fopen_s(&f, fileName.c_str(), "w+");
@@ -184,10 +187,14 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const DWORD i
     while(block)
     {
       if(block->m_free)
+      {
         fprintf(f, "Free:\t0x%08x [Bytes:%d]\n", block, block->m_userdataSize);
+      }
       else
+      {
         fprintf(f, "Used:\t0x%08x [Bytes:%d]\n", block, block->m_userdataSize);
         block = block->m_next;
+      }
     }
 
     fprintf(f, "\n\nMemory Dump:\n");
@@ -211,39 +218,45 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const DWORD i
         // Write all the chars for this line now
         fprintf(f, "  ", charPtr);
         for(uint32 charI = 0; charI<bytesPerLine; ++charI, ++charPtr)
+        {
             fprintf(f, "%c", *charPtr);
+        }
         charPtr = ptr;
 
         // Write the new line memory data
         fprintf(f, "\n0x%08x: ", ptr);
         fprintf(f, "%02x", *(ptr) );
         i = 0;
-     }
-     else
-       fprintf(f, ":%02x", *(ptr) );
+      }
+      else
+      {
+        fprintf(f, ":%02x", *(ptr) );
+      }
     }
 
     // Fill any gaps in the tab
     if( (uint32)(ptr - m_poolMemory) >= m_totalPoolSize)
     {
       uint32 lastLineBytes = i;
+
       for(i; i< bytesPerLine; i++)
+      {
         fprintf(f," --");
+      }
 
       // Write all the chars for this line now
       fprintf(f, "  ", charPtr);
+
       for(uint32 charI = 0; charI<lastLineBytes; ++charI, ++charPtr)
+      {   
         fprintf(f, "%c", *charPtr);
-     charPtr = ptr;
+      }
+      charPtr = ptr;
+    }
   }
+
+  fclose(f);
 }
-
-    fclose(f);
-}
-
-
-
-
 
 
 
