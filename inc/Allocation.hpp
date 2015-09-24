@@ -1,6 +1,10 @@
 #ifndef __ALLOCATION_HPP__
 #define __ALLOCATION_HPP__
 
+typedef unsigned int uint32
+typedef unsigned char uint8
+
+
 /* Overload operator new */
 inline void *operator new(size_t size, MemoryPool &pool)
 {

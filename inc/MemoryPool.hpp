@@ -1,16 +1,14 @@
 #ifndef __MEMORY_POOL_HPP__
 #define __MEMORY_POOL_HPP__
 
-#include<iostream>
+#include <iostream>
+#include "Allocation.hpp"
 
 #ifdef _DEBUG
 #define TRASH_POOLS 1
 #else
 #define TRASH_POOLS 0
 #endif
-
-typedef unsigned int uint32
-typedef unsigned char uint8
 
 class MemoryPool
 {
