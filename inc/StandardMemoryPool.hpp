@@ -1,22 +1,24 @@
 #ifndef __STANDARD_MEMORY_POOL_HPP__
 #define __STANDARD_MEMORY_POOL_HPP__
 
-#include "MemoryPool.h"
+#include "MemoryPool.hpp"
 #include "malloc.h"
 #include "math.h"
 #include <string>
+#include <string.h>
 
 class StandardMemoryPool : public MemoryPool
 {
   public:
     void *allocate(uint32 size);
     void free(void *ptr);
-    int  integrityCheck() const;
-    void dumpToFile(const std::string& fileName, const DWORD itemsPerLine) const;
+    int integrityCheck() const;
+    void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const;
 
-    staic const uint8 s_minFreeBlockSize = 16;
+    static const uint8 s_minFreeBlockSize = 16;
 
   private:
+    friend class MemoryPoolManager;
     StandardMemoryPool(uint32 sizeInBytes, bool boundsCheck)
     {
       if(boundsCheck)
@@ -54,16 +56,15 @@ class StandardMemoryPool : public MemoryPool
     class Chunk
     {
       public:
-        Chunk(uint32 userDataSize) :m_next(NULL), m_prev(NULL), datasize(userDataSize), free(true) {}
+        Chunk(uint32 userDataSize) :m_next(NULL), m_prev(NULL), m_userdataSize(userDataSize), m_free(true) {}
         ~Chunk(){}
         int write(void *dest){ memcpy(dest, this, sizeof(Chunk)); }
         int read(void *src) { memcpy (this, src, sizeof(Chunk)); }
 
-      private:
         Chunk *m_prev;
         Chunk *m_next;
-        uint32 datasize;
-        int free;
+        uint32 m_userdataSize;
+        int m_free;
     };
 
     uint8 * m_poolMemory;

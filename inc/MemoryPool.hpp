@@ -2,7 +2,7 @@
 #define __MEMORY_POOL_HPP__
 
 #include <iostream>
-#include "Allocation.hpp"
+#include "MemoryPoolTypes.hpp"
 
 #ifdef _DEBUG
 #define TRASH_POOLS 1
@@ -17,9 +17,9 @@ class MemoryPool
     virtual void free(void *ptr) = 0;
     virtual int integrityCheck() const = 0;
     virtual void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const = 0;
-    inline unit32 getFreePoolSize() { return m_freePoolSize; }
-    inline unit32 getTotalPoolSize() { return m_totalPoolSize; }
-    inline unit32 getBoundsCheck() { return m_boundsCheck; }
+    inline uint32 getFreePoolSize() { return m_freePoolSize; }
+    inline uint32 getTotalPoolSize() { return m_totalPoolSize; }
+    inline uint32 hasBoundsCheckOn() { return m_boundsCheck; }
     
     static const uint8   s_trashOnCreation = 0xCC;
     static const uint8   s_trashOnAllocSignature = 0xAB;
@@ -51,8 +51,6 @@ class MemoryPool
 
 };
 
-const uint8  MemoryPool::s_startBound[16] = {'[','B','l','o','c','k','.','.','.','.','S','t','a','r','t',']'};
-const uint8  MemoryPool::s_endBound[16]   = {'[','B','l','o','c','k','.','.','.','.','.','.','E','n','d',']'};
 
 #endif
 

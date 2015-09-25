@@ -1,5 +1,7 @@
 #include "StandardMemoryPool.hpp"
+#include <assert.h>
 #include<iostream>
+#include <stdio.h>
 
 void *StandardMemoryPool :: allocate(uint32 size)
 {
@@ -36,7 +38,7 @@ void *StandardMemoryPool :: allocate(uint32 size)
     if(m_boundsCheck)
        memcpy( blockData + requiredSize - s_boundsCheckSize, s_startBound, s_boundsCheckSize );
        block->m_next = (Chunk*)(blockData + requiredSize);
-       block->m_userdataSize = _size;
+       block->m_userdataSize = size;
   }
 
   // If a block is found, update the pool size
@@ -67,7 +69,7 @@ void StandardMemoryPool :: free(void* ptr)
     
     Chunk* block = (Chunk*)((uint8 *)ptr - sizeof(Chunk));
 
-    ASSERT(block->m_free == false, "This block is already free");
+    assert(block->m_free == false);
 
     if(block->m_free)
       return;
@@ -147,9 +149,9 @@ void StandardMemoryPool :: free(void* ptr)
 /**
 *	\brief		Make an integrity test whether the bounds check flag is true
 */
-bool StandardMemoryPool :: integrityCheck() const
+int StandardMemoryPool :: integrityCheck() const
 {
-  if( m_boundsCheck == 1 ) 
+  if(m_boundsCheck == 1)
   {
     Chunk* temp = (Chunk*)(m_poolMemory + s_boundsCheckSize);
 
@@ -173,7 +175,7 @@ bool StandardMemoryPool :: integrityCheck() const
 void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const
 {
   FILE* f = NULL;
-  fopen_s(&f, fileName.c_str(), "w+");
+  f = fopen(fileName.c_str(), "w+");
   if(f)
   {
     fprintf(f, "Memory pool ----------------------------------\n");

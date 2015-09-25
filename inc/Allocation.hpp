@@ -1,22 +1,20 @@
 #ifndef __ALLOCATION_HPP__
 #define __ALLOCATION_HPP__
 
-typedef unsigned int uint32
-typedef unsigned char uint8
-
+#include "MemoryPool.hpp"
+#include <iostream>
+#include "assert.h"
 
 /* Overload operator new */
 inline void *operator new(size_t size, MemoryPool &pool)
 {
   void *ptr = pool.allocate(size);
-
   assert(ptr);
-
   return ptr;
 }
 
 /* Overload operator delete */
-inline void *operator delete(void *ptr, MemoryPool &pool)
+inline void operator delete(void *ptr, MemoryPool &pool)
 {
   pool.free(ptr);
 }

@@ -17,25 +17,25 @@ LIBXML_LIB  = -ltinyxml
 LIBMEMPOOL_INC = inc
 LIBMEMPOOL_SRC = src
 LIBMEMPOOL_INCL = -I$(LIBMEMPOOL_INC)
-LIBMEMPOOL_LIB  = -lmemorypool
+LIBMEMPOOL_LIB  = -lmempool
 
 
-CFLAGS  += $(LIBEVENT_INCL)
-LDFLAGS += $(LIBEVENT_LIB)
+CFLAGS  += $(LIBXML_INCL) $(LIBMEMPOOL_INCL)
+LDFLAGS += $(LIBXML_LIB) $(LIBMEMPOOL_LIB)
 
 LIB_LINK_MODE = -static
 
 #--------------------------------------------------------------------
 
-LIBXMLOBJS = $(LIBMEMPOOL_SRC)/tinystr.o \
-             $(LIBXML_INC)/tinyxml.o \
-             $(LIBXML_INC)/tinyxmlerror.o \
-             $(LIBXML_INC)/tinyxmlparser.o 
+LIBXMLOBJS = $(LIBXML_SRC)/tinystr.o \
+             $(LIBXML_SRC)/tinyxml.o \
+             $(LIBXML_SRC)/tinyxmlerror.o \
+             $(LIBXML_SRC)/tinyxmlparser.o 
 
-LIBMEMPOOLOBJS = $(LIBMEMPOOL_SRC)\MemoryPoolManager.cpp
-                 $(LIBMEMPOOL_SRC)\StandardMemoryPool.cpp
+LIBMEMPOOLOBJS = $(LIBMEMPOOL_SRC)/MemoryPoolManager.o \
+                 $(LIBMEMPOOL_SRC)/StandardMemoryPool.o
 
-TARGET =  libtinyxml.so libtinyxml.a libmempool.so libmemory.a mempool_test
+TARGET =  libtinyxml.so libtinyxml.a libmempool.so libmempool.a mempool_test
 
 #--------------------------------------------------------------------
 
@@ -53,11 +53,11 @@ libmempool.so: $(LIBMEMPOOLOBJS)
 libmempool.a: $(LIBMEMPOOLOBJS)
 	$(AR) $@ $^
 
-mempool: src/main.o
+mempool_test: src/main.o
 	$(LINKER) $^ $(LIB_LINK_MODE) -L. -ltinyxml -lmempool $(LDFLAGS) -o $@
 
 clean:
-	@( $(RM) *.o vgcore.* core core.* $(TARGET) )
+	@( $(RM) $(LIBXML_SRC)/*.o $(LIBMEMPOOL_SRC)/*.o vgcore.* core core.* $(TARGET) )
 
 #--------------------------------------------------------------------
 
@@ -67,3 +67,5 @@ clean:
 
 %.o : %.cpp
 	$(CC) $(CFLAGS) -c $^ -o $@	
+
+

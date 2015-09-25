@@ -1,10 +1,11 @@
 #ifndef __MEMORY_POOL_MANAGER__
 #define __MEMORY_POOL_MANAGER__
 
-#include "MemoryPool.h"
+#include "MemoryPool.hpp"
 #include <map>
 #include <string>
 #include <iostream>
+using namespace std;
 
 class MemoryPoolManager
 {

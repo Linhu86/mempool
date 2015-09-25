@@ -1,6 +1,7 @@
-#include "MemoryPoolManager.h"
-#include "StandardMemoryPool.h"
-#include "../TinyXML/tinyxml.h"
+#include "MemoryPoolManager.hpp"
+#include "StandardMemoryPool.hpp"
+#include "tinyxml.h"
+#include <assert.h>
 
 const char* const MemoryPoolManager::c_poolsFileXML = "./pools.xml";
 
@@ -13,7 +14,7 @@ MemoryPoolManager::MemoryPoolManager(const char* const poolsFileXML)
   if(doc.LoadFile())
   {
     TiXmlNode* root = doc.FirstChild("memorypools");
-    ASSERT(root, "File contains invalid data");
+    assert(root);
     if(root)
     {
       TiXmlNode* pool = root->FirstChildElement();
@@ -36,7 +37,7 @@ MemoryPoolManager::MemoryPoolManager(const char* const poolsFileXML)
             {
               if(strcmp(attribute->Name(), "name") == 0)
               {
-                strcpy_s(name, 128, attribute->Value());
+                strncpy(name, attribute->Value(), 128);
               }
               else if(strcmp(attribute->Name(), "size") == 0)
               { 
