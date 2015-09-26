@@ -20,13 +20,13 @@ class MemoryPool
     inline uint32 getFreePoolSize() { return m_freePoolSize; }
     inline uint32 getTotalPoolSize() { return m_totalPoolSize; }
     inline uint32 hasBoundsCheckOn() { return m_boundsCheck; }
-    
-    static const uint8   s_trashOnCreation = 0xCC;
-    static const uint8   s_trashOnAllocSignature = 0xAB;
-    static const uint8   s_trashOnFreeSignature  = 0xFE;
-    static const uint8   s_boundsCheckSize = 16;
-    static const uint8   s_startBound[s_boundsCheckSize];
-    static const uint8   s_endBound[s_boundsCheckSize];
+
+    static const uint8 s_trashOnCreation = 0xCC;
+    static const uint8 s_trashOnAllocSignature = 0xAB;
+    static const uint8 s_trashOnFreeSignature  = 0xFE;
+    static const uint8 s_boundsCheckSize = 16;
+    static const uint8 s_startBound[s_boundsCheckSize];
+    static const uint8 s_endBound[s_boundsCheckSize];
 
   protected:
      MemoryPool() 
@@ -38,7 +38,7 @@ class MemoryPool
           m_trashOnFree(0)
           {};
      
-    virtual ~MemoryPool();
+    virtual ~MemoryPool(){}
 
     uint32       m_totalPoolSize;
     uint32       m_freePoolSize;

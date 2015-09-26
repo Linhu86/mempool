@@ -1,4 +1,5 @@
 #include "StandardMemoryPool.hpp"
+#include "MemoryPool.hpp"
 #include <assert.h>
 #include<iostream>
 #include <stdio.h>
@@ -190,11 +191,11 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
     {
       if(block->m_free)
       {
-        fprintf(f, "Free:\t0x%08x [Bytes:%d]\n", block, block->m_userdataSize);
+        fprintf(f, "Free:\t0x%p [Bytes:%d]\n", block, block->m_userdataSize);
       }
       else
       {
-        fprintf(f, "Used:\t0x%08x [Bytes:%d]\n", block, block->m_userdataSize);
+        fprintf(f, "Used:\t0x%p [Bytes:%d]\n", block, block->m_userdataSize);
         block = block->m_next;
       }
     }
@@ -203,13 +204,13 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
     uint8* ptr = m_poolMemory;
     uint8* charPtr = m_poolMemory;
 
-    fprintf(f, "Start: 0x%08x\n", ptr);
+    fprintf(f, "Start: 0x%p\n", ptr);
     uint8 i = 0;
 
     // Write the hex memory data
     uint32 bytesPerLine = itemsPerLine * 4;
 
-    fprintf(f, "\n0x%08x: ", ptr);
+    fprintf(f, "\n0x%p: ", ptr);
     fprintf(f, "%02x", *(ptr) );
     ++ptr;
 
@@ -226,7 +227,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
         charPtr = ptr;
 
         // Write the new line memory data
-        fprintf(f, "\n0x%08x: ", ptr);
+        fprintf(f, "\n0x%p: ", ptr);
         fprintf(f, "%02x", *(ptr) );
         i = 0;
       }

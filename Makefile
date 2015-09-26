@@ -32,8 +32,9 @@ LIBXMLOBJS = $(LIBXML_SRC)/tinystr.o \
              $(LIBXML_SRC)/tinyxmlerror.o \
              $(LIBXML_SRC)/tinyxmlparser.o 
 
-LIBMEMPOOLOBJS = $(LIBMEMPOOL_SRC)/MemoryPoolManager.o \
-                 $(LIBMEMPOOL_SRC)/StandardMemoryPool.o
+LIBMEMPOOLOBJS = $(LIBMEMPOOL_SRC)/MemoryPool.o \
+                                 $(LIBMEMPOOL_SRC)/MemoryPoolManager.o \
+                                 $(LIBMEMPOOL_SRC)/StandardMemoryPool.o
 
 TARGET =  libtinyxml.so libtinyxml.a libmempool.so libmempool.a mempool_test
 

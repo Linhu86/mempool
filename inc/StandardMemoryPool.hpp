@@ -58,8 +58,8 @@ class StandardMemoryPool : public MemoryPool
       public:
         Chunk(uint32 userDataSize) :m_next(NULL), m_prev(NULL), m_userdataSize(userDataSize), m_free(true) {}
         ~Chunk(){}
-        int write(void *dest){ memcpy(dest, this, sizeof(Chunk)); }
-        int read(void *src) { memcpy (this, src, sizeof(Chunk)); }
+        void write(void *dest){ memcpy(dest, this, sizeof(Chunk)); }
+        void read(void *src) { memcpy (this, src, sizeof(Chunk)); }
 
         Chunk *m_prev;
         Chunk *m_next;
