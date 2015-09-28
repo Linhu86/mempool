@@ -61,8 +61,8 @@ class MemoryPoolManager
   
   private:
     MemoryPoolManager(const char * const poolsFileXML);
-    int  isAValidPoolType(const char* poolType) const;
-    MemoryPool*  allocateByPoolType(const char* poolType) const;
+    int isAValidPoolType(const char* poolType) const;
+    MemoryPool* allocateByPoolType(const char* poolType) const;
 
     std::map<std::string, MemoryPool*> m_pool;
 };

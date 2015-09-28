@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#define mem_log(fmt, ...) printf(fmt, ...);
+#define mem_debug_log(fmt, ...) printf("[%s]"#fmt"\n", __FUNCTION__, ##__VA_ARGS__)
 
 #endif
 

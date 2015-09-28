@@ -23,7 +23,7 @@ class StandardMemoryPool : public MemoryPool
     {
 
 #ifdef DEBUG_ON
-      mem_log("StandardPool Constructor initialization.\n");
+      mem_debug_log("StandardPool Constructor initialization.");
 #endif
     
       if(boundsCheck){
@@ -57,6 +57,9 @@ class StandardMemoryPool : public MemoryPool
 
     ~StandardMemoryPool()
     {
+#ifdef DEBUG_ON
+      mem_debug_log("StandardPool Deonstructor deconstruction.");
+#endif
     }
 
   private:

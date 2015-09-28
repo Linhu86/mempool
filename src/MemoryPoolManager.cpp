@@ -3,7 +3,7 @@
 #include "tinyxml.h"
 #include <assert.h>
 
-const char* const MemoryPoolManager::c_poolsFileXML = "./pools.xml";
+const char* const MemoryPoolManager::c_poolsFileXML = "pools.xml";
 
 /**
 *	\brief		Construct the manager reading from the provided xml files all the pools

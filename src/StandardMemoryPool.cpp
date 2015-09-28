@@ -1,7 +1,7 @@
 #include "StandardMemoryPool.hpp"
 #include "MemoryPool.hpp"
 #include <assert.h>
-#include<iostream>
+#include <iostream>
 #include <stdio.h>
 
 void *StandardMemoryPool :: allocate(uint32 size)
@@ -9,10 +9,12 @@ void *StandardMemoryPool :: allocate(uint32 size)
   uint32 requiredSize = size + sizeof(Chunk);
 
   if(m_boundsCheck)
+  {
     requiredSize += s_boundsCheckSize *2;
-
-  Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
+  }
   
+  Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
+
   while(block)
   {
      if(block->m_free && block->m_userdataSize >= requiredSize ) 
@@ -23,9 +25,10 @@ void *StandardMemoryPool :: allocate(uint32 size)
   uint32 * blockData = (uint32 *)block;
 
   // If block is found, return NULL
-  if(!block) 
+  if(!block)
+  {
     return NULL;
-
+  }
   // If the block is valid, create a new free block with what remains of the block memory
   uint32 freeUserDataSize = block->m_userdataSize - requiredSize;
   if( freeUserDataSize > s_minFreeBlockSize)
@@ -57,7 +60,9 @@ void *StandardMemoryPool :: allocate(uint32 size)
 
   //Trash on alloc if required
   if(m_trashOnAlloc)
+  {
     memset(blockData + sizeof(Chunk), s_trashOnAllocSignature, block->m_userdataSize);
+  }
 
   return (blockData + sizeof(Chunk));
 }

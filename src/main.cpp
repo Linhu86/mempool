@@ -5,6 +5,7 @@
 #include "MemoryPoolManager.hpp"
 #include "StandardMemoryPool.hpp"
 #include <string.h>
+#include "memlog.hpp"
 
 /**
 *   \brief Execute a test on several pool's functionalities.
@@ -136,9 +137,8 @@ int main()
 {
   StandardMemoryPool *pool = new StandardMemoryPool(1024*1024, 1);
 
-  pool->allocate(1000);
+  memoryStandardUnitTest(pool, 1);
 
-  pool->allocate(1000);
 
   return 0;
 }
