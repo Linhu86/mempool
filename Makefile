@@ -23,6 +23,8 @@ LIBMEMPOOL_LIB  = -lmempool
 CFLAGS  += $(LIBXML_INCL) $(LIBMEMPOOL_INCL)
 LDFLAGS += $(LIBXML_LIB) $(LIBMEMPOOL_LIB)
 
+CFLAGS += -DDEBUG_ON
+
 LIB_LINK_MODE = -static
 
 #--------------------------------------------------------------------
@@ -55,7 +57,7 @@ libmempool.a: $(LIBMEMPOOLOBJS)
 	$(AR) $@ $^
 
 mempool_test: src/main.o
-	$(LINKER) $^ $(LIB_LINK_MODE) -L. -ltinyxml -lmempool $(LDFLAGS) -o $@
+	$(LINKER) $^ $(LIB_LINK_MODE) -L. -ltinyxml -lmempool $(LDFLAGS) -g -o $@
 
 clean:
 	@( $(RM) $(LIBXML_SRC)/*.o $(LIBMEMPOOL_SRC)/*.o vgcore.* core core.* $(TARGET) )

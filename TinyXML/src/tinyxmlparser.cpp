@@ -357,7 +357,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p, TiXmlEncoding encoding )
 }
 
 #ifdef TIXML_USE_STL
-/*static*/ bool TiXmlBase::StreamWhiteSpace( std::istream * in, TIXML_STRING * tag )
+/*static*/ int TiXmlBase::StreamWhiteSpace( std::istream * in, TIXML_STRING * tag )
 {
 	for( ;; )
 	{
@@ -372,7 +372,7 @@ const char* TiXmlBase::SkipWhiteSpace( const char* p, TiXmlEncoding encoding )
 	}
 }
 
-/*static*/ bool TiXmlBase::StreamTo( std::istream * in, int character, TIXML_STRING * tag )
+/*static*/ int TiXmlBase::StreamTo( std::istream * in, int character, TIXML_STRING * tag )
 {
 	//assert( character > 0 && character < 128 );	// else it won't work in utf-8
 	while ( in->good() )
@@ -526,9 +526,9 @@ const char* TiXmlBase::GetEntity( const char* p, char* value, int* length, TiXml
 }
 
 
-bool TiXmlBase::StringEqual( const char* p,
+int TiXmlBase::StringEqual( const char* p,
 							 const char* tag,
-							 bool ignoreCase,
+							 int ignoreCase,
 							 TiXmlEncoding encoding )
 {
 	assert( p );
@@ -568,9 +568,9 @@ bool TiXmlBase::StringEqual( const char* p,
 
 const char* TiXmlBase::ReadText(	const char* p, 
 									TIXML_STRING * text, 
-									bool trimWhiteSpace, 
+									int trimWhiteSpace, 
 									const char* endTag, 
-									bool caseInsensitive,
+									int caseInsensitive,
 									TiXmlEncoding encoding )
 {
     *text = "";
@@ -590,7 +590,7 @@ const char* TiXmlBase::ReadText(	const char* p,
 	}
 	else
 	{
-		bool whitespace = false;
+		int whitespace = false;
 
 		// Remove leading white space:
 		p = SkipWhiteSpace( p, encoding );
@@ -672,7 +672,7 @@ void TiXmlDocument::StreamIn( std::istream * in, TIXML_STRING * tag )
 			if ( node )
 			{
 				node->StreamIn( in, tag );
-				bool isElement = node->ToElement() != 0;
+				int isElement = node->ToElement() != 0;
 				delete node;
 				node = 0;
 
@@ -955,8 +955,8 @@ void TiXmlElement::StreamIn (std::istream * in, TIXML_STRING * tag)
 			assert( in->peek() == '<' );
 			int tagIndex = (int) tag->length();
 
-			bool closingTag = false;
-			bool firstCharFound = false;
+			int closingTag = false;
+			int firstCharFound = false;
 
 			for( ;; )
 			{
@@ -1527,7 +1527,7 @@ const char* TiXmlText::Parse( const char* p, TiXmlParsingData* data, TiXmlEncodi
 	}
 	else
 	{
-		bool ignoreWhite = true;
+		int ignoreWhite = true;
 
 		const char* end = "<";
 		p = ReadText( p, &value, ignoreWhite, end, false, encoding );
@@ -1620,7 +1620,7 @@ const char* TiXmlDeclaration::Parse( const char* p, TiXmlParsingData* data, TiXm
 	return 0;
 }
 
-bool TiXmlText::Blank() const
+int TiXmlText::Blank() const
 {
 	for ( unsigned i=0; i<value.length(); i++ )
 		if ( !IsWhiteSpace( value[i] ) )

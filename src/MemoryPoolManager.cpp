@@ -31,7 +31,7 @@ MemoryPoolManager::MemoryPoolManager(const char* const poolsFileXML)
             char name[128] = {'\0'};
             uint8 blockSize = 4;
             uint32 size = 1024;
-            bool boundCheck = false;
+            int boundCheck = false;
 
             while(attribute)
             {
@@ -77,7 +77,7 @@ MemoryPoolManager::MemoryPoolManager(const char* const poolsFileXML)
 /**
 *	\brief		Check if the pool type in string form is a valid recognized pool type.
 */
-bool MemoryPoolManager::isAValidPoolType(const char* poolType) const
+int MemoryPoolManager::isAValidPoolType(const char* poolType) const
 {
   if(strcmp(poolType, "pool") == 0) 
   {

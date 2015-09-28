@@ -3,15 +3,16 @@
 #include <stdio.h>
 #include "Allocation.hpp"
 #include "MemoryPoolManager.hpp"
+#include "StandardMemoryPool.hpp"
 #include <string.h>
 
 /**
 *   \brief Execute a test on several pool's functionalities.
 */
-bool memoryStandardUnitTest(MemoryPool* pool, bool dumpMemoryStates)
+int memoryStandardUnitTest(MemoryPool* pool, int dumpMemoryStates)
 {
     // If bounds check is on, we need to alter some math here and there
-    bool hasBoundsCheckOn = pool->hasBoundsCheckOn();
+    int hasBoundsCheckOn = pool->hasBoundsCheckOn();
     uint8 poolSizeOffset = hasBoundsCheckOn ? 48 : 16;
 
     // Trash tests -------------------------------------------------------------------------
@@ -133,25 +134,11 @@ bool memoryStandardUnitTest(MemoryPool* pool, bool dumpMemoryStates)
 // Entry point
 int main()
 {
-  bool dumpMemoryStates = true;
+  StandardMemoryPool *pool = new StandardMemoryPool(1024*1024, 1);
 
-  if(!memoryStandardUnitTest(POOL("TestPool"), dumpMemoryStates))
-  {
-    printf("Memory test on TestPool failed\n");
-  }
-  else
-  {
-    printf("Memory test on TestPool succeeded\n");
-  }
+  pool->allocate(1000);
 
-  if(!memoryStandardUnitTest(POOL("BoundedTestPool"), dumpMemoryStates))
-  {
-    printf("Memory test on BoundedTestPool failed\n");
-  }
-  else
-  {
-    printf("Memory test on BoundedTestPool succeeded\n");
-  }
+  pool->allocate(1000);
 
   return 0;
 }

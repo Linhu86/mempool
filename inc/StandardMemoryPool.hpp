@@ -2,8 +2,9 @@
 #define __STANDARD_MEMORY_POOL_HPP__
 
 #include "MemoryPool.hpp"
-#include "malloc.h"
-#include "math.h"
+#include "memlog.hpp"
+#include <malloc.h>
+#include <math.h>
 #include <string>
 #include <string.h>
 
@@ -17,12 +18,17 @@ class StandardMemoryPool : public MemoryPool
 
     static const uint8 s_minFreeBlockSize = 16;
 
-  private:
     friend class MemoryPoolManager;
-    StandardMemoryPool(uint32 sizeInBytes, bool boundsCheck)
+    StandardMemoryPool(uint32 sizeInBytes, int boundsCheck)
     {
-      if(boundsCheck)
+
+#ifdef DEBUG_ON
+      mem_log("StandardPool Constructor initialization.\n");
+#endif
+    
+      if(boundsCheck){
         m_boundsCheck;
+      }        
 
       m_poolMemory = ::new uint8[sizeInBytes];
 
@@ -52,7 +58,8 @@ class StandardMemoryPool : public MemoryPool
     ~StandardMemoryPool()
     {
     }
-    
+
+  private:
     class Chunk
     {
       public:

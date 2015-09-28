@@ -130,23 +130,23 @@ public:
 	virtual ~TiXmlVisitor() {}
 
 	/// Visit a document.
-	virtual bool VisitEnter( const TiXmlDocument& /*doc*/ )			{ return true; }
+	virtual int VisitEnter( const TiXmlDocument& /*doc*/ )			{ return true; }
 	/// Visit a document.
-	virtual bool VisitExit( const TiXmlDocument& /*doc*/ )			{ return true; }
+	virtual int VisitExit( const TiXmlDocument& /*doc*/ )			{ return true; }
 
 	/// Visit an element.
-	virtual bool VisitEnter( const TiXmlElement& /*element*/, const TiXmlAttribute* /*firstAttribute*/ )	{ return true; }
+	virtual int VisitEnter( const TiXmlElement& /*element*/, const TiXmlAttribute* /*firstAttribute*/ )	{ return true; }
 	/// Visit an element.
-	virtual bool VisitExit( const TiXmlElement& /*element*/ )		{ return true; }
+	virtual int VisitExit( const TiXmlElement& /*element*/ )		{ return true; }
 
 	/// Visit a declaration
-	virtual bool Visit( const TiXmlDeclaration& /*declaration*/ )	{ return true; }
+	virtual int Visit( const TiXmlDeclaration& /*declaration*/ )	{ return true; }
 	/// Visit a text node
-	virtual bool Visit( const TiXmlText& /*text*/ )					{ return true; }
+	virtual int Visit( const TiXmlText& /*text*/ )					{ return true; }
 	/// Visit a comment node
-	virtual bool Visit( const TiXmlComment& /*comment*/ )			{ return true; }
+	virtual int Visit( const TiXmlComment& /*comment*/ )			{ return true; }
 	/// Visit an unknow node
-	virtual bool Visit( const TiXmlUnknown& /*unknown*/ )			{ return true; }
+	virtual int Visit( const TiXmlUnknown& /*unknown*/ )			{ return true; }
 };
 
 // Only used by Attribute::Query functions
@@ -217,10 +217,10 @@ public:
 		into a single space or not. The default is to condense. Note changing this
 		value is not thread safe.
 	*/
-	static void SetCondenseWhiteSpace( bool condense )		{ condenseWhiteSpace = condense; }
+	static void SetCondenseWhiteSpace( int condense )		{ condenseWhiteSpace = condense; }
 
 	/// Return the current white space setting.
-	static bool IsWhiteSpaceCondensed()						{ return condenseWhiteSpace; }
+	static int IsWhiteSpaceCondensed()						{ return condenseWhiteSpace; }
 
 	/** Return the position, in the original source file, of this node or attribute.
 		The row and column are 1-based. (That is the first row and first column is
@@ -286,11 +286,11 @@ protected:
 
 	static const char* SkipWhiteSpace( const char*, TiXmlEncoding encoding );
 
-	inline static bool IsWhiteSpace( char c )		
+	inline static int IsWhiteSpace( char c )		
 	{ 
 		return ( isspace( (unsigned char) c ) || c == '\n' || c == '\r' ); 
 	}
-	inline static bool IsWhiteSpace( int c )
+	inline static int IsWhiteSpace( int c )
 	{
 		if ( c < 256 )
 			return IsWhiteSpace( (char) c );
@@ -298,8 +298,8 @@ protected:
 	}
 
 	#ifdef TIXML_USE_STL
-	static bool	StreamWhiteSpace( std::istream * in, TIXML_STRING * tag );
-	static bool StreamTo( std::istream * in, int character, TIXML_STRING * tag );
+	static int	StreamWhiteSpace( std::istream * in, TIXML_STRING * tag );
+	static int StreamTo( std::istream * in, int character, TIXML_STRING * tag );
 	#endif
 
 	/*	Reads an XML name into the string provided. Returns
@@ -313,9 +313,9 @@ protected:
 	*/
 	static const char* ReadText(	const char* in,				// where to start
 									TIXML_STRING* text,			// the string read
-									bool ignoreWhiteSpace,		// whether to keep the white space
+									int ignoreWhiteSpace,		// whether to keep the white space
 									const char* endTag,			// what ends this text
-									bool ignoreCase,			// whether to ignore case in the end tag
+									int ignoreCase,			// whether to ignore case in the end tag
 									TiXmlEncoding encoding );	// the current encoding
 
 	// If an entity has been found, transform it into a character.
@@ -362,9 +362,9 @@ protected:
 	// Return true if the next characters in the stream are any of the endTag sequences.
 	// Ignore case only works for english, and should only be relied on when comparing
 	// to English words: StringEqual( p, "version", true ) is fine.
-	static bool StringEqual(	const char* p,
+	static int StringEqual(	const char* p,
 								const char* endTag,
-								bool ignoreCase,
+								int ignoreCase,
 								TiXmlEncoding encoding );
 
 	static const char* errorString[ TIXML_ERROR_STRING_COUNT ];
@@ -409,7 +409,7 @@ private:
 
 	};
 	static Entity entity[ NUM_ENTITY ];
-	static bool condenseWhiteSpace;
+	static int condenseWhiteSpace;
 };
 
 
@@ -607,7 +607,7 @@ public:
 	TiXmlNode* ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& withThis );
 
 	/// Delete a child of this node.
-	bool RemoveChild( TiXmlNode* removeThis );
+	int RemoveChild( TiXmlNode* removeThis );
 
 	/// Navigate to a sibling node.
 	const TiXmlNode* PreviousSibling() const			{ return prev; }
@@ -691,7 +691,7 @@ public:
 	}
 
 	/// Returns true if this node has no children.
-	bool NoChildren() const						{ return !firstChild; }
+	int NoChildren() const						{ return !firstChild; }
 
 	virtual const TiXmlDocument*    ToDocument()    const { return 0; } ///< Cast to a more defined type. Will return null if not of the requested type.
 	virtual const TiXmlElement*     ToElement()     const { return 0; } ///< Cast to a more defined type. Will return null if not of the requested type.
@@ -734,7 +734,7 @@ public:
 		const char* xmlcstr = printer.CStr();
 		@endverbatim
 	*/
-	virtual bool Accept( TiXmlVisitor* visitor ) const = 0;
+	virtual int Accept( TiXmlVisitor* visitor ) const = 0;
 
 protected:
 	TiXmlNode( NodeType _type );
@@ -856,9 +856,9 @@ public:
 		return const_cast< TiXmlAttribute* >( (const_cast< const TiXmlAttribute* >(this))->Previous() ); 
 	}
 
-	bool operator==( const TiXmlAttribute& rhs ) const { return rhs.name == name; }
-	bool operator<( const TiXmlAttribute& rhs )	 const { return name < rhs.name; }
-	bool operator>( const TiXmlAttribute& rhs )  const { return name > rhs.name; }
+	int operator==( const TiXmlAttribute& rhs ) const { return rhs.name == name; }
+	int operator<( const TiXmlAttribute& rhs )	 const { return name < rhs.name; }
+	int operator>( const TiXmlAttribute& rhs )  const { return name > rhs.name; }
 
 	/*	Attribute parsing starts: first letter of the name
 						 returns: the next char after the value end quote
@@ -1127,7 +1127,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* visitor ) const;
+	virtual int Accept( TiXmlVisitor* visitor ) const;
 
 protected:
 
@@ -1180,7 +1180,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* visitor ) const;
+	virtual int Accept( TiXmlVisitor* visitor ) const;
 
 protected:
 	void CopyTo( TiXmlComment* target ) const;
@@ -1232,9 +1232,9 @@ public:
 	virtual void Print( FILE* cfile, int depth ) const;
 
 	/// Queries whether this represents text using a CDATA section.
-	bool CDATA() const				{ return cdata; }
+	int CDATA() const				{ return cdata; }
 	/// Turns on or off a CDATA representation of text.
-	void SetCDATA( bool _cdata )	{ cdata = _cdata; }
+	void SetCDATA( int _cdata )	{ cdata = _cdata; }
 
 	virtual const char* Parse( const char* p, TiXmlParsingData* data, TiXmlEncoding encoding );
 
@@ -1243,21 +1243,21 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* content ) const;
+	virtual int Accept( TiXmlVisitor* content ) const;
 
 protected :
 	///  [internal use] Creates a new Element and returns it.
 	virtual TiXmlNode* Clone() const;
 	void CopyTo( TiXmlText* target ) const;
 
-	bool Blank() const;	// returns true if all white space and new lines
+	int Blank() const;	// returns true if all white space and new lines
 	// [internal use]
 	#ifdef TIXML_USE_STL
 	virtual void StreamIn( std::istream * in, TIXML_STRING * tag );
 	#endif
 
 private:
-	bool cdata;			// true if this should be input and output as a CDATA style text element
+	int cdata;			// true if this should be input and output as a CDATA style text element
 };
 
 
@@ -1319,7 +1319,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* visitor ) const;
+	virtual int Accept( TiXmlVisitor* visitor ) const;
 
 protected:
 	void CopyTo( TiXmlDeclaration* target ) const;
@@ -1364,7 +1364,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* content ) const;
+	virtual int Accept( TiXmlVisitor* content ) const;
 
 protected:
 	void CopyTo( TiXmlUnknown* target ) const;
@@ -1404,28 +1404,28 @@ public:
 		Returns true if successful. Will delete any existing
 		document data before loading.
 	*/
-	bool LoadFile( TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
+	int LoadFile( TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
 	/// Save a file using the current document value. Returns true if successful.
-	bool SaveFile() const;
+	int SaveFile() const;
 	/// Load a file using the given filename. Returns true if successful.
-	bool LoadFile( const char * filename, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
+	int LoadFile( const char * filename, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
 	/// Save a file using the given filename. Returns true if successful.
-	bool SaveFile( const char * filename ) const;
+	int SaveFile( const char * filename ) const;
 	/** Load a file using the given FILE*. Returns true if successful. Note that this method
 		doesn't stream - the entire object pointed at by the FILE*
 		will be interpreted as an XML file. TinyXML doesn't stream in XML from the current
 		file location. Streaming may be added in the future.
 	*/
-	bool LoadFile( FILE*, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
+	int LoadFile( FILE*, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
 	/// Save a file using the given FILE*. Returns true if successful.
-	bool SaveFile( FILE* ) const;
+	int SaveFile( FILE* ) const;
 
 	#ifdef TIXML_USE_STL
-	bool LoadFile( const std::string& filename, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING )			///< STL std::string version.
+	int LoadFile( const std::string& filename, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING )			///< STL std::string version.
 	{
 		return LoadFile( filename.c_str(), encoding );
 	}
-	bool SaveFile( const std::string& filename ) const		///< STL std::string version.
+	int SaveFile( const std::string& filename ) const		///< STL std::string version.
 	{
 		return SaveFile( filename.c_str() );
 	}
@@ -1449,7 +1449,7 @@ public:
 		- The ErrorDesc() method will return the name of the error. (very useful)
 		- The ErrorRow() and ErrorCol() will return the location of the error (if known)
 	*/	
-	bool Error() const						{ return error; }
+	int Error() const						{ return error; }
 
 	/// Contains a textual (english) description of the error if one occurs.
 	const char * ErrorDesc() const	{ return errorDesc.c_str (); }
@@ -1526,7 +1526,7 @@ public:
 
 	/** Walk the XML tree visiting this node and all of its children. 
 	*/
-	virtual bool Accept( TiXmlVisitor* content ) const;
+	virtual int Accept( TiXmlVisitor* content ) const;
 
 protected :
 	// [internal use]
@@ -1538,12 +1538,12 @@ protected :
 private:
 	void CopyTo( TiXmlDocument* target ) const;
 
-	bool error;
+	int error;
 	int  errorId;
 	TIXML_STRING errorDesc;
 	int tabsize;
 	TiXmlCursor errorLocation;
-	bool useMicrosoftBOM;		// the UTF-8 BOM were found when read. Note this, and try to write.
+	int useMicrosoftBOM;		// the UTF-8 BOM were found when read. Note this, and try to write.
 };
 
 
@@ -1732,16 +1732,16 @@ public:
 	TiXmlPrinter() : depth( 0 ), simpleTextPrint( false ),
 					 buffer(), indent( "    " ), lineBreak( "\n" ) {}
 
-	virtual bool VisitEnter( const TiXmlDocument& doc );
-	virtual bool VisitExit( const TiXmlDocument& doc );
+	virtual int VisitEnter( const TiXmlDocument& doc );
+	virtual int VisitExit( const TiXmlDocument& doc );
 
-	virtual bool VisitEnter( const TiXmlElement& element, const TiXmlAttribute* firstAttribute );
-	virtual bool VisitExit( const TiXmlElement& element );
+	virtual int VisitEnter( const TiXmlElement& element, const TiXmlAttribute* firstAttribute );
+	virtual int VisitExit( const TiXmlElement& element );
 
-	virtual bool Visit( const TiXmlDeclaration& declaration );
-	virtual bool Visit( const TiXmlText& text );
-	virtual bool Visit( const TiXmlComment& comment );
-	virtual bool Visit( const TiXmlUnknown& unknown );
+	virtual int Visit( const TiXmlDeclaration& declaration );
+	virtual int Visit( const TiXmlText& text );
+	virtual int Visit( const TiXmlComment& comment );
+	virtual int Visit( const TiXmlUnknown& unknown );
 
 	/** Set the indent characters for printing. By default 4 spaces
 		but tab (\t) is also useful, or null/empty string for no indentation.
@@ -1783,7 +1783,7 @@ private:
 	}
 
 	int depth;
-	bool simpleTextPrint;
+	int simpleTextPrint;
 	TIXML_STRING buffer;
 	TIXML_STRING indent;
 	TIXML_STRING lineBreak;

@@ -33,7 +33,7 @@ distribution.
 
 FILE* TiXmlFOpen( const char* filename, const char* mode );
 
-bool TiXmlBase::condenseWhiteSpace = true;
+int TiXmlBase::condenseWhiteSpace = true;
 
 // Microsoft compiler security
 FILE* TiXmlFOpen( const char* filename, const char* mode )
@@ -328,7 +328,7 @@ TiXmlNode* TiXmlNode::ReplaceChild( TiXmlNode* replaceThis, const TiXmlNode& wit
 }
 
 
-bool TiXmlNode::RemoveChild( TiXmlNode* removeThis )
+int TiXmlNode::RemoveChild( TiXmlNode* removeThis )
 {
 	if ( !removeThis ) {
 		return false;
@@ -828,7 +828,7 @@ void TiXmlElement::CopyTo( TiXmlElement* target ) const
 	}
 }
 
-bool TiXmlElement::Accept( TiXmlVisitor* visitor ) const
+int TiXmlElement::Accept( TiXmlVisitor* visitor ) const
 {
 	if ( visitor->VisitEnter( *this, attributeSet.First() ) ) 
 	{
@@ -906,18 +906,18 @@ void TiXmlDocument::operator=( const TiXmlDocument& copy )
 }
 
 
-bool TiXmlDocument::LoadFile( TiXmlEncoding encoding )
+int TiXmlDocument::LoadFile( TiXmlEncoding encoding )
 {
 	return LoadFile( Value(), encoding );
 }
 
 
-bool TiXmlDocument::SaveFile() const
+int TiXmlDocument::SaveFile() const
 {
 	return SaveFile( Value() );
 }
 
-bool TiXmlDocument::LoadFile( const char* _filename, TiXmlEncoding encoding )
+int TiXmlDocument::LoadFile( const char* _filename, TiXmlEncoding encoding )
 {
 	TIXML_STRING filename( _filename );
 	value = filename;
@@ -927,7 +927,7 @@ bool TiXmlDocument::LoadFile( const char* _filename, TiXmlEncoding encoding )
 
 	if ( file )
 	{
-		bool result = LoadFile( file, encoding );
+		int result = LoadFile( file, encoding );
 		fclose( file );
 		return result;
 	}
@@ -938,7 +938,7 @@ bool TiXmlDocument::LoadFile( const char* _filename, TiXmlEncoding encoding )
 	}
 }
 
-bool TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
+int TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
 {
 	if ( !file ) 
 	{
@@ -1036,13 +1036,13 @@ bool TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
 }
 
 
-bool TiXmlDocument::SaveFile( const char * filename ) const
+int TiXmlDocument::SaveFile( const char * filename ) const
 {
 	// The old c stuff lives on...
 	FILE* fp = TiXmlFOpen( filename, "w" );
 	if ( fp )
 	{
-		bool result = SaveFile( fp );
+		int result = SaveFile( fp );
 		fclose( fp );
 		return result;
 	}
@@ -1050,7 +1050,7 @@ bool TiXmlDocument::SaveFile( const char * filename ) const
 }
 
 
-bool TiXmlDocument::SaveFile( FILE* fp ) const
+int TiXmlDocument::SaveFile( FILE* fp ) const
 {
 	if ( useMicrosoftBOM ) 
 	{
@@ -1108,7 +1108,7 @@ void TiXmlDocument::Print( FILE* cfile, int depth ) const
 }
 
 
-bool TiXmlDocument::Accept( TiXmlVisitor* visitor ) const
+int TiXmlDocument::Accept( TiXmlVisitor* visitor ) const
 {
 	if ( visitor->VisitEnter( *this ) )
 	{
@@ -1265,7 +1265,7 @@ void TiXmlComment::CopyTo( TiXmlComment* target ) const
 }
 
 
-bool TiXmlComment::Accept( TiXmlVisitor* visitor ) const
+int TiXmlComment::Accept( TiXmlVisitor* visitor ) const
 {
 	return visitor->Visit( *this );
 }
@@ -1311,7 +1311,7 @@ void TiXmlText::CopyTo( TiXmlText* target ) const
 }
 
 
-bool TiXmlText::Accept( TiXmlVisitor* visitor ) const
+int TiXmlText::Accept( TiXmlVisitor* visitor ) const
 {
 	return visitor->Visit( *this );
 }
@@ -1400,7 +1400,7 @@ void TiXmlDeclaration::CopyTo( TiXmlDeclaration* target ) const
 }
 
 
-bool TiXmlDeclaration::Accept( TiXmlVisitor* visitor ) const
+int TiXmlDeclaration::Accept( TiXmlVisitor* visitor ) const
 {
 	return visitor->Visit( *this );
 }
@@ -1432,7 +1432,7 @@ void TiXmlUnknown::CopyTo( TiXmlUnknown* target ) const
 }
 
 
-bool TiXmlUnknown::Accept( TiXmlVisitor* visitor ) const
+int TiXmlUnknown::Accept( TiXmlVisitor* visitor ) const
 {
 	return visitor->Visit( *this );
 }
@@ -1706,17 +1706,17 @@ TiXmlHandle TiXmlHandle::ChildElement( const char* value, int count ) const
 }
 
 
-bool TiXmlPrinter::VisitEnter( const TiXmlDocument& )
+int TiXmlPrinter::VisitEnter( const TiXmlDocument& )
 {
 	return true;
 }
 
-bool TiXmlPrinter::VisitExit( const TiXmlDocument& )
+int TiXmlPrinter::VisitExit( const TiXmlDocument& )
 {
 	return true;
 }
 
-bool TiXmlPrinter::VisitEnter( const TiXmlElement& element, const TiXmlAttribute* firstAttribute )
+int TiXmlPrinter::VisitEnter( const TiXmlElement& element, const TiXmlAttribute* firstAttribute )
 {
 	DoIndent();
 	buffer += "<";
@@ -1753,7 +1753,7 @@ bool TiXmlPrinter::VisitEnter( const TiXmlElement& element, const TiXmlAttribute
 }
 
 
-bool TiXmlPrinter::VisitExit( const TiXmlElement& element )
+int TiXmlPrinter::VisitExit( const TiXmlElement& element )
 {
 	--depth;
 	if ( !element.FirstChild() ) 
@@ -1779,7 +1779,7 @@ bool TiXmlPrinter::VisitExit( const TiXmlElement& element )
 }
 
 
-bool TiXmlPrinter::Visit( const TiXmlText& text )
+int TiXmlPrinter::Visit( const TiXmlText& text )
 {
 	if ( text.CDATA() )
 	{
@@ -1807,7 +1807,7 @@ bool TiXmlPrinter::Visit( const TiXmlText& text )
 }
 
 
-bool TiXmlPrinter::Visit( const TiXmlDeclaration& declaration )
+int TiXmlPrinter::Visit( const TiXmlDeclaration& declaration )
 {
 	DoIndent();
 	declaration.Print( 0, 0, &buffer );
@@ -1816,7 +1816,7 @@ bool TiXmlPrinter::Visit( const TiXmlDeclaration& declaration )
 }
 
 
-bool TiXmlPrinter::Visit( const TiXmlComment& comment )
+int TiXmlPrinter::Visit( const TiXmlComment& comment )
 {
 	DoIndent();
 	buffer += "<!--";
@@ -1827,7 +1827,7 @@ bool TiXmlPrinter::Visit( const TiXmlComment& comment )
 }
 
 
-bool TiXmlPrinter::Visit( const TiXmlUnknown& unknown )
+int TiXmlPrinter::Visit( const TiXmlUnknown& unknown )
 {
 	DoIndent();
 	buffer += "<";
