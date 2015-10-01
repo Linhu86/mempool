@@ -137,8 +137,11 @@ int main()
 {
   StandardMemoryPool *pool = new StandardMemoryPool(1024*1024, 1);
 
-  memoryStandardUnitTest(pool, 1);
+  pool->allocate(128);
 
+  pool->allocate(128);
+
+  pool->dumpToFile("pools.xml", 32);
 
   return 0;
 }
