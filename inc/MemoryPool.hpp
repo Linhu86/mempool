@@ -32,16 +32,16 @@ class MemoryPool
      MemoryPool() 
         : m_totalPoolSize(0),
           m_freePoolSize(0),
-          m_boundsCheck(0),
-          m_trashOnCreation(0),
-          m_trashOnAlloc(0),
-          m_trashOnFree(0)
+          m_boundsCheck(1),
+          m_trashOnCreation(1),
+          m_trashOnAlloc(1),
+          m_trashOnFree(1)
           {};
      
     virtual ~MemoryPool(){}
 
-    uint32       m_totalPoolSize;
-    uint32       m_freePoolSize;
+    uint32      m_totalPoolSize;
+    uint32      m_freePoolSize;
 
     // Bitfield
     unsigned    m_trashOnCreation : 1;

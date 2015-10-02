@@ -6,6 +6,9 @@
 
 void *StandardMemoryPool :: allocate(uint32 size)
 {
+#ifdef DEBUG_ON
+  printf("[%s] Start to allocate block with size.\n", __FUNCTION__);
+#endif
   uint32 requiredSize = size + sizeof(Chunk);
 
   if(m_boundsCheck)
@@ -64,6 +67,9 @@ void *StandardMemoryPool :: allocate(uint32 size)
     memset(blockData + sizeof(Chunk), s_trashOnAllocSignature, block->m_userdataSize);
   }
 
+#ifdef DEBUG_ON
+  dumpToStdOut(4);
+#endif
   return (blockData + sizeof(Chunk));
 }
 
@@ -72,7 +78,7 @@ void StandardMemoryPool :: free(void* ptr)
     // is a valid node?
     if(!ptr) 
       return;
-    
+
     Chunk* block = (Chunk*)((uint8 *)ptr - sizeof(Chunk));
 
     assert(block->m_free == false);
@@ -266,7 +272,37 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
   fclose(f);
 }
 
+void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine) const
+{
+  int i = 0, j = 0;
+  int residue = 0;
+  uint8 *ptr = m_poolMemory;
+  printf("\n\n Start to dump memory pool. \n");  
 
+  residue = m_poolSize%ElemInLine;
+
+  for(i = 0; i < m_poolSize/ElemInLine; i ++)
+  {
+    for(j = 0; j < ElemInLine; j++)
+    {
+      printf("[Address: 0x%x] : 0X%x ",ptr, *ptr);
+      ptr ++;
+    }
+    printf("\n");
+  }
+
+  if(residue)
+  {
+    for(i = 0; i < residue; i++)
+    {
+      printf("0x%x ", *ptr);
+      ptr ++;
+    }
+    printf("\n");
+  }
+
+  printf("\n\n Finish to dump memory pool.\n");
+}
 
 
 

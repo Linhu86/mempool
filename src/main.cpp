@@ -6,6 +6,7 @@
 #include "StandardMemoryPool.hpp"
 #include <string.h>
 #include "memlog.hpp"
+#include <string>
 
 /**
 *   \brief Execute a test on several pool's functionalities.
@@ -135,14 +136,23 @@ int memoryStandardUnitTest(MemoryPool* pool, int dumpMemoryStates)
 // Entry point
 int main()
 {
-  StandardMemoryPool *pool = new StandardMemoryPool(1024*1024, 1);
 
-  pool->allocate(128);
+  StandardMemoryPool *pool = new StandardMemoryPool(1024, 1);
 
-  pool->allocate(128);
+//  static uint8 *s[160] = { 0 };
 
-  pool->dumpToFile("pools.xml", 32);
+  Chunk* block = (Chunk *)pool->allocate(64);
 
+  printf("new allocated block address: 0x%x\n", block);
+
+/*
+  block->read(s);
+
+  for(i = 0; i < 128; i++)
+  {
+    printf("0x%x ", s[i]);
+  }
+*/
   return 0;
 }
 
