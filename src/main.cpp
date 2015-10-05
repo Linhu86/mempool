@@ -137,22 +137,22 @@ int memoryStandardUnitTest(MemoryPool* pool, int dumpMemoryStates)
 int main()
 {
 
+  char *str = "abcdefghijklnmopqrstuvwxyz";
+
   StandardMemoryPool *pool = new StandardMemoryPool(1024, 1);
 
 //  static uint8 *s[160] = { 0 };
 
   Chunk* block = (Chunk *)pool->allocate(64);
 
+  memcpy((uint8 *)block, str, strlen(str));
+
   printf("new allocated block address: 0x%x\n", block);
 
-/*
-  block->read(s);
+#ifdef DEBUG_ON
+  pool->dumpToStdOut(4);
+#endif
 
-  for(i = 0; i < 128; i++)
-  {
-    printf("0x%x ", s[i]);
-  }
-*/
   return 0;
 }
 
