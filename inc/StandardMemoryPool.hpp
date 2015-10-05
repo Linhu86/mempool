@@ -13,8 +13,8 @@ class Chunk
   public:
     Chunk(uint32 userDataSize) :m_next(NULL), m_prev(NULL), m_userdataSize(userDataSize), m_free(true) {}
     ~Chunk(){}
-    void write(void *src){ memcpy(this, src, sizeof(Chunk)); }
-    void read(void *dest) { memcpy (dest, this, sizeof(Chunk)); }
+    void write(void *src){ memcpy(src, this, sizeof(Chunk)); }
+    void read(void *dest) { memcpy (this, dest, sizeof(Chunk)); }
 
     Chunk *m_prev;
     Chunk *m_next;
