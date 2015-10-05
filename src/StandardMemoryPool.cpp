@@ -25,21 +25,38 @@ void *StandardMemoryPool :: allocate(uint32 size)
      block = block->m_next;
   }
 
-  uint32 * blockData = (uint32 *)block;
+  uint8 * blockData = (uint8 *)block;
 
   // If block is found, return NULL
   if(!block)
   {
+#ifdef DEBUG_ON
+    mem_debug_log("Free block not found.\n");
+#endif
     return NULL;
   }
+#ifdef DEBUG_ON
+  else
+  {
+    mem_debug_log("First free block address: 0x%x.\n", blockData);
+  }
+#endif
+
   // If the block is valid, create a new free block with what remains of the block memory
   uint32 freeUserDataSize = block->m_userdataSize - requiredSize;
+#ifdef DEBUG_ON
+      mem_debug_log("User required allocate size: %d, block remain size:%d, sizeof(Chunk): %d\n", requiredSize, freeUserDataSize, sizeof(Chunk));
+#endif
+
   if( freeUserDataSize > s_minFreeBlockSize)
   {
     Chunk freeBlock(freeUserDataSize);
     freeBlock.m_next = block->m_next;
     freeBlock.m_prev = block;
     freeBlock.write( blockData + requiredSize );
+    #ifdef DEBUG_ON
+      mem_debug_log("New header saved in address: 0x%x\n", blockData + requiredSize);
+     #endif
     if(freeBlock.m_next)
       freeBlock.m_next->m_prev = (Chunk*)(blockData + requiredSize);
     if(m_boundsCheck)
