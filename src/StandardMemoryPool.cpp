@@ -150,7 +150,9 @@ void StandardMemoryPool :: free(void* ptr)
             next = block->m_next->m_next;
 
             if(block->m_next->m_next)
+            {
               block->m_next->m_next->m_prev = headBlock;
+            }
 
             fullBlockSize += m_boundsCheck == 1 ? block->m_next->m_userdataSize + sizeof(Chunk) + s_boundsCheckSize * 2 : block->m_next->m_userdataSize + sizeof(Chunk);
           }
@@ -163,6 +165,11 @@ void StandardMemoryPool :: free(void* ptr)
     headBlock = block;
     prev = block->m_prev;
     next = block->m_next->m_next;
+
+    if(block->m_next->m_next)
+    {
+      block->m_next->m_next->m_prev = headBlock;
+    }
 
     // Include the next node in the block size so we trash it as well
     fullBlockSize += m_boundsCheck == 1 ? block->m_next->m_userdataSize + sizeof(Chunk) + s_boundsCheckSize * 2 : block->m_next->m_userdataSize + sizeof(Chunk);
