@@ -85,7 +85,7 @@ void *StandardMemoryPool :: allocate(uint32 size)
   }
 
 #ifdef DEBUG_ON
-  dumpToStdOut(4);
+  dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 #endif
   return (blockData + sizeof(Chunk));
 }
@@ -289,7 +289,8 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
   fclose(f);
 }
 
-void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine) const
+//format could be hex or char.
+void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, uint32 format) const
 {
   int i = 0, j = 0;
   int residue = 0;
@@ -302,7 +303,19 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine) const
   {
     for(j = 0; j < ElemInLine; j++)
     {
-      printf("[Address: 0x%x] : 0X%x ",ptr, *ptr);
+      if(format == DUMP_HEX)
+      {
+        printf("[Address: 0x%x] : 0x%x ",ptr, *ptr);
+      }
+      else if(format == DUMP_CHAR)
+      {
+        printf("[Address: 0x%x] : %c ",ptr, *ptr);
+      }
+      else
+      {
+        mem_debug_log("Error dump format.\n");
+        return;
+      }
       ptr ++;
     }
     printf("\n");

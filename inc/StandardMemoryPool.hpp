@@ -8,6 +8,16 @@
 #include <string>
 #include <string.h>
 
+#define DUMP_ELEMENT_PER_LINE 4
+
+typedef enum
+{
+  DUMP_ = 0,
+  DUMP_HEX,
+  DUMP_CHAR
+} dump_type;
+
+
 class Chunk
 {
   public:
@@ -29,7 +39,7 @@ class StandardMemoryPool : public MemoryPool
     void free(void *ptr);
     int integrityCheck() const;
     void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const;
-    void dumpToStdOut(uint32 ElemInLine) const;
+    void dumpToStdOut(uint32 ElemInLine, uint32 format) const;
 
     static const uint8 s_minFreeBlockSize = 16;
 
@@ -73,7 +83,7 @@ class StandardMemoryPool : public MemoryPool
         freeChunk.write(m_poolMemory);
       }
 #ifdef DEBUG_ON
-       dumpToStdOut(4);
+       dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 #endif
 
     }
