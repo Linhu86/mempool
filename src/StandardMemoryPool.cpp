@@ -84,6 +84,7 @@ void *StandardMemoryPool :: allocate(uint32 size)
   }
 
 #ifdef DEBUG_ON
+  memory_pool_info();
   dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 #endif
   return (blockData + sizeof(Chunk));
@@ -92,15 +93,21 @@ void *StandardMemoryPool :: allocate(uint32 size)
 void StandardMemoryPool :: free(void* ptr)
 {
     // is a valid node?
-    if(!ptr) 
+    if(!ptr)
+    {
+      mem_debug_log("Block pointer to free is not valid.");
       return;
+    }
 
     Chunk* block = (Chunk*)((uint8 *)ptr - sizeof(Chunk));
 
     assert(block->m_free == false);
 
     if(block->m_free)
+    {
+      mem_debug_log("Block is already freed.");
       return;
+    }
 
     uint32 fullBlockSize = block->m_userdataSize + sizeof(Chunk) + (m_boundsCheck == 1 ? s_boundsCheckSize * 2 : 0);
     
@@ -349,7 +356,7 @@ void StandardMemoryPool :: block_display()
 
   while(block)
   {
-    printf("[block: %d] address: 0x%x Free: %d -->\n", i, block, block->m_free);
+    printf("[block: %d] address: 0x%x Free: %d size:%d-->\n", i, block, block->m_free, block->m_userdataSize);
     block = block->m_next;
     i++;
   }
@@ -358,7 +365,25 @@ void StandardMemoryPool :: block_display()
 }
 
 
+void StandardMemoryPool :: memory_pool_info()
+{
+  mem_debug_log("Start to log memory pool information.");
 
+  printf("\n\nMemory Pool information:\n");
+
+  printf("Address: 0x%x\n", m_poolMemory);
+
+  printf("Total space: %d\n", m_totalPoolSize);
+
+  printf("Free space: %d\n", m_freePoolSize);
+
+  printf("Trash on allocate: %d\n", m_trashOnAlloc);
+
+  printf("Trash on creation: %d\n", m_trashOnCreation);
+
+  printf("Trash on free: %d\n", m_trashOnFree);
+
+}
 
 
 

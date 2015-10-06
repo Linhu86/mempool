@@ -9,3 +9,7 @@
 *.PS
 *.WK3
 mempool.SearchResults
+*.o
+*.so
+*.a
+mempool_test

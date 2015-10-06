@@ -41,6 +41,7 @@ class StandardMemoryPool : public MemoryPool
     void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const;
     void dumpToStdOut(uint32 ElemInLine, uint32 format) const;
     void block_display();
+    void memory_pool_info();
 
     static const uint8 s_minFreeBlockSize = 16;
 
