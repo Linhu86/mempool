@@ -150,7 +150,7 @@ int main()
   printf("new allocated block address: 0x%x\n", block);
 
 #ifdef DEBUG_ON
-  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
+  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
 #endif
 
   return 0;

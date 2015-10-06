@@ -9,6 +9,9 @@
 #include <string.h>
 
 #define DUMP_ELEMENT_PER_LINE 4
+#define BLOCK_NAME_LEN 16
+#define DEFAULT_BLOCK_NAME "unknown"
+#define MEMORY_POOL_BLOCK_NAME "pool"
 
 typedef enum
 {
@@ -21,15 +24,30 @@ typedef enum
 class Chunk
 {
   public:
-    Chunk(uint32 userDataSize) :m_next(NULL), m_prev(NULL), m_userdataSize(userDataSize), m_free(true) {}
+    Chunk(uint32 userDataSize) :m_next(NULL), m_prev(NULL), m_userdataSize(userDataSize), m_free(true) {
+      strncpy(m_name, DEFAULT_BLOCK_NAME, strlen(DEFAULT_BLOCK_NAME));
+    }
     ~Chunk(){}
     void write(void *src){ memcpy(src, this, sizeof(Chunk)); }
     void read(void *dest) { memcpy (this, dest, sizeof(Chunk)); }
+    void name_set(char *name) {
+     if(strlen(name) > BLOCK_NAME_LEN)
+     {
+        mem_debug_log("memory block name length larger than 16");
+        return;
+      }
+      memset(m_name, '\0', BLOCK_NAME_LEN);
+      strncpy(m_name, name, strlen(name));
+#ifdef DEBUG_ON
+      mem_debug_log("New set memory block name: %s", m_name);
+#endif
+    }
 
     Chunk *m_prev;
     Chunk *m_next;
     uint32 m_userdataSize;
-    int m_free;
+    uint32 m_free;
+    char m_name[BLOCK_NAME_LEN];
 };
 
 class StandardMemoryPool : public MemoryPool
@@ -40,7 +58,7 @@ class StandardMemoryPool : public MemoryPool
     int integrityCheck() const;
     void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const;
     void dumpToStdOut(uint32 ElemInLine, uint32 format) const;
-    void block_display();
+    void memory_block_list();
     void memory_pool_info();
 
     static const uint8 s_minFreeBlockSize = 16;
@@ -75,6 +93,7 @@ class StandardMemoryPool : public MemoryPool
       {
         m_freePoolSize -= s_boundsCheckSize * 2;
         Chunk freeChunk(sizeInBytes - sizeof(Chunk) - 2 * s_boundsCheckSize);
+        freeChunk.name_set(MEMORY_POOL_BLOCK_NAME);
         freeChunk.write(m_poolMemory + s_boundsCheckSize);
         memcpy(m_poolMemory, s_startBound, s_boundsCheckSize);
         memcpy(m_poolMemory + sizeInBytes - s_boundsCheckSize, s_endBound, s_boundsCheckSize);
@@ -84,13 +103,14 @@ class StandardMemoryPool : public MemoryPool
       else
       {
         Chunk freeChunk(sizeInBytes - sizeof(Chunk));
+        freeChunk.name_set(MEMORY_POOL_BLOCK_NAME);
         freeChunk.write(m_poolMemory);
         freeChunk.m_next = NULL;
         freeChunk.m_prev = NULL;
       }
 
 #ifdef DEBUG_ON
-       dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
+       dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
 #endif
 
     }
