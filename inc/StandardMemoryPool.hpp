@@ -40,6 +40,7 @@ class StandardMemoryPool : public MemoryPool
     int integrityCheck() const;
     void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const;
     void dumpToStdOut(uint32 ElemInLine, uint32 format) const;
+    void block_display();
 
     static const uint8 s_minFreeBlockSize = 16;
 
@@ -76,12 +77,17 @@ class StandardMemoryPool : public MemoryPool
         freeChunk.write(m_poolMemory + s_boundsCheckSize);
         memcpy(m_poolMemory, s_startBound, s_boundsCheckSize);
         memcpy(m_poolMemory + sizeInBytes - s_boundsCheckSize, s_endBound, s_boundsCheckSize);
+        freeChunk.m_next = NULL;
+        freeChunk.m_prev = NULL;
       }
       else
       {
         Chunk freeChunk(sizeInBytes - sizeof(Chunk));
         freeChunk.write(m_poolMemory);
+        freeChunk.m_next = NULL;
+        freeChunk.m_prev = NULL;
       }
+
 #ifdef DEBUG_ON
        dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 #endif

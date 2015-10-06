@@ -8,6 +8,7 @@ void *StandardMemoryPool :: allocate(uint32 size)
 {
 #ifdef DEBUG_ON
   printf("[%s] Start to allocate block with size.\n", __FUNCTION__);
+  block_display();
 #endif
   uint32 requiredSize = size + sizeof(Chunk);
 
@@ -30,9 +31,7 @@ void *StandardMemoryPool :: allocate(uint32 size)
   // If block is found, return NULL
   if(!block)
   {
-#ifdef DEBUG_ON
     mem_debug_log("Free block not found.\n");
-#endif
     return NULL;
   }
 #ifdef DEBUG_ON
@@ -335,7 +334,28 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, uint32 format) const
 }
 
 
+void StandardMemoryPool :: block_display()
+{
+  int i = 1;
+  Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
 
+  if(block == NULL)
+  {
+    mem_debug_log("block list is NULL.");
+    return;
+  }
+
+  printf("Start to print the memory block list.\n\n\n");
+
+  while(block)
+  {
+    printf("[block: %d] address: 0x%x Free: %d -->\n", i, block, block->m_free);
+    block = block->m_next;
+    i++;
+  }
+
+  printf("[last block] NULL\n\n\n");
+}
 
 
 
