@@ -55,13 +55,20 @@ void *StandardMemoryPool :: allocate(uint32 size)
     freeBlock.write( blockData + requiredSize );
     #ifdef DEBUG_ON
       mem_debug_log("New header saved in address: 0x%x\n", blockData + requiredSize);
-     #endif
+    #endif
+
     if(freeBlock.m_next)
+    {
       freeBlock.m_next->m_prev = (Chunk*)(blockData + requiredSize);
+    }
+
     if(m_boundsCheck)
+    {
        memcpy( blockData + requiredSize - s_boundsCheckSize, s_startBound, s_boundsCheckSize );
-       block->m_next = (Chunk*)(blockData + requiredSize);
-       block->m_userdataSize = size;
+    }
+
+    block->m_next = (Chunk*)(blockData + requiredSize);
+    block->m_userdataSize = size;
   }
 
   // If a block is found, update the pool size
@@ -85,7 +92,9 @@ void *StandardMemoryPool :: allocate(uint32 size)
 
 #ifdef DEBUG_ON
   memory_pool_info();
+  memory_block_list();
   dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+  mem_debug_log("Retrun allocated block address: %p", blockData + sizeof(Chunk));
 #endif
   return (blockData + sizeof(Chunk));
 }
@@ -159,7 +168,7 @@ void StandardMemoryPool :: free(void* ptr)
   }
 
   // Create the free block
-  uint32* freeBlockStart = (uint32*)headBlock;
+  uint8* freeBlockStart = (uint8*)headBlock;
 
   if(m_trashOnFree)
     memset(m_boundsCheck == 1 ? freeBlockStart - s_boundsCheckSize : freeBlockStart, s_trashOnFreeSignature, fullBlockSize);
@@ -179,6 +188,10 @@ void StandardMemoryPool :: free(void* ptr)
     memcpy( freeBlockStart - s_boundsCheckSize, s_startBound, s_boundsCheckSize );
     memcpy( freeBlockStart + sizeof(Chunk) + freeUserDataSize, s_endBound, s_boundsCheckSize );
   }
+
+#ifdef DEBUG_ON
+  memory_block_list();
+#endif
 }
 
 /**

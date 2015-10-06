@@ -153,6 +153,12 @@ int main()
   pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
 #endif
 
+  pool->free(block);
+
+#ifdef DEBUG_ON
+  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+#endif
+  
   return 0;
 }
 
