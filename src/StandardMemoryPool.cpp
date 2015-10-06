@@ -52,7 +52,6 @@ void *StandardMemoryPool :: allocate(uint32 size)
     Chunk freeBlock(freeUserDataSize);
     freeBlock.m_next = block->m_next;
     freeBlock.m_prev = block;
-    freeBlock.write( blockData + requiredSize );
     #ifdef DEBUG_ON
       mem_debug_log("New header saved in address: 0x%x\n", blockData + requiredSize);
     #endif
@@ -61,6 +60,8 @@ void *StandardMemoryPool :: allocate(uint32 size)
     {
       freeBlock.m_next->m_prev = (Chunk*)(blockData + requiredSize);
     }
+
+    freeBlock.write( blockData + requiredSize );
 
     if(m_boundsCheck)
     {
@@ -171,7 +172,9 @@ void StandardMemoryPool :: free(void* ptr)
   uint8* freeBlockStart = (uint8*)headBlock;
 
   if(m_trashOnFree)
+  {
     memset(m_boundsCheck == 1 ? freeBlockStart - s_boundsCheckSize : freeBlockStart, s_trashOnFreeSignature, fullBlockSize);
+  }
 
   uint32 freeUserDataSize = fullBlockSize - sizeof(Chunk);
 
