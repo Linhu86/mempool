@@ -7,9 +7,15 @@
 
 int Chunk :: name_set(const char *name)
 {
+  if(!name)
+  {
+    mem_debug_log("memory block name is NULL.");
+    return FALSE;
+  }
+
   if(strlen(name) > BLOCK_NAME_LEN)
   {
-    mem_debug_log("memory block name length larger than 16");
+    mem_debug_log("memory block name length larger than 16.");
     return FALSE;
   }
   memset(m_name, '\0', BLOCK_NAME_LEN);
@@ -73,7 +79,7 @@ StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
 StandardMemoryPool :: ~StandardMemoryPool()
 {
 #ifdef DEBUG_ON
-  mem_debug_log("[%s] StandardPool Deonstructor deconstruction.", __FUNCTION__);
+  mem_debug_log("StandardPool Deonstructor deconstruction.");
 #endif
   delete [] m_poolMemory;
 }
@@ -182,6 +188,9 @@ void *StandardMemoryPool :: allocate(uint64 size)
   memory_block_list();
 //  dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
   mem_debug_log("Retrun allocated block address: %p", blockData + sizeof(Chunk));
+  mem_debug_log("Type: Standard Memory");
+  mem_debug_log("Total Size: %lu", m_totalPoolSize);
+  mem_debug_log("Free Size: %lu", m_freePoolSize);
 #endif
 #endif
   return (blockData + sizeof(Chunk));
@@ -353,7 +362,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
     {
       if(format == DUMP_HEX)
       {
-        fprintf(f, "[Address: %p] : %c",ptr, *ptr);
+        fprintf(f, "[Address: %p] : %p ",ptr, *ptr);
       }
       else if(format == DUMP_CHAR)
       {
@@ -393,6 +402,9 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
   uint32 residue = 0;
   uint8 *ptr = m_poolMemory;
   printf("\n\n Start to dump memory pool. \n");
+  printf("Type: Standard Memory\n");
+  printf("Total Size: %lu\n", m_totalPoolSize);
+  printf("Free Size: %lu\n", m_freePoolSize);
 
   residue = m_poolSize%ElemInLine;
 
@@ -443,7 +455,7 @@ void StandardMemoryPool :: memory_block_list()
     return;
   }
 
-  printf("Start to print the memory block list.\n\n\n");
+  printf("Start to print the memory block list. Memory total size: %lu, Free memory size: %lu. \n\n\n", m_totalPoolSize, m_freePoolSize);
 
   while(block)
   {

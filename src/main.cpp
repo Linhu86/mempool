@@ -46,7 +46,7 @@ static void mem_pool_stress_test()
   pool->memory_block_list();
 #endif
 
-#if 0
+
   if(pool->integrityCheck() == TRUE)
   {
     mem_debug_log("Integrity check successful");
@@ -56,7 +56,7 @@ static void mem_pool_stress_test()
     mem_debug_log("Integrity check fail");
   }
   pool->dumpToFile(DUMP_FILE_NAME, DUMP_ELEMENT_PER_LINE, DUMP_HEX);
-#endif
+
 
   for(i = block_num; i >= 0 ; i --)
   {
