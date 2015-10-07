@@ -9,7 +9,7 @@
 #include <string.h>
 
 //max memory pool size 1G.
-#define MAX_MEMPOOL_SIZE 2*1024*1024*1024
+#define MAX_MEMPOOL_SIZE 2*1024*1024*1024UL
 #define DUMP_ELEMENT_PER_LINE 4
 #define BLOCK_NAME_LEN 16
 #define DEFAULT_BLOCK_NAME "unknown"
@@ -38,9 +38,9 @@ class Chunk
 class StandardMemoryPool : public MemoryPool
 {
   public:
-    StandardMemoryPool(uint32 sizeInBytes, uint32 boundsCheck);
+    StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck);
     ~StandardMemoryPool();
-    void *allocate(uint32 size);
+    void *allocate(uint64 size);
     int free(void *ptr);
     int integrityCheck() const;
     void dumpToFile(const std::string& fileName, const uint32 itemsPerLine, const uint32 format) const;

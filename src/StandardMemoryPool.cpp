@@ -20,7 +20,7 @@ int Chunk :: name_set(const char *name)
   return TRUE;
 }
 
-StandardMemoryPool :: StandardMemoryPool(uint32 sizeInBytes, uint32 boundsCheck)
+StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
 {
   m_poolSize = sizeInBytes;
 
@@ -29,7 +29,7 @@ StandardMemoryPool :: StandardMemoryPool(uint32 sizeInBytes, uint32 boundsCheck)
   m_poolMemory = new uint8[sizeInBytes];
 
 #ifdef DEBUG_ON
-  mem_debug_log("StandardPool Constructor initialization in address %p with size %d\n", m_poolMemory, sizeInBytes);
+  mem_debug_log("StandardPool Constructor initialization in address %p with size %lu\n", m_poolMemory, sizeInBytes);
   printf("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d\n", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
   if(boundsCheck){
     mem_debug_log("Memory pool bounds check feature present.\n");
@@ -78,20 +78,20 @@ StandardMemoryPool :: ~StandardMemoryPool()
   delete [] m_poolMemory;
 }
 
-void *StandardMemoryPool :: allocate(uint32 size)
+void *StandardMemoryPool :: allocate(uint64 size)
 {
 #ifdef DEBUG_ON
   mem_debug_log("Start to allocate block with size.");
   memory_block_list();
 #endif
 
-  if(size < 0 || size > MAX_MEMPOOL_SIZE)
+  if(size > MAX_MEMPOOL_SIZE)
   {
     mem_debug_log("Wrong memory pool size.\n");
     return NULL;
   }
 
-  uint32 requiredSize = size + sizeof(Chunk);
+  uint64 requiredSize = size + sizeof(Chunk);
 
   if(m_boundsCheck)
   {
@@ -125,9 +125,9 @@ void *StandardMemoryPool :: allocate(uint32 size)
 #endif
 
   // If the block is valid, create a new free block with what remains of the block memory
-  uint32 freeUserDataSize = block->m_userdataSize - requiredSize;
+  uint64 freeUserDataSize = block->m_userdataSize - requiredSize;
 #ifdef DEBUG_ON
-      mem_debug_log("User required allocate size: %d, block remain size:%d, sizeof(Chunk): %d", requiredSize, freeUserDataSize, sizeof(Chunk));
+      mem_debug_log("User required allocate size: %lu, block remain size:%lu, sizeof(Chunk): %lu", requiredSize, freeUserDataSize, sizeof(Chunk));
 #endif
 
   if( freeUserDataSize > s_minFreeBlockSize)
@@ -338,8 +338,8 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
 
   fprintf(f, "Memory pool ----------------------------------\n\n");
   fprintf(f, "Type: Standard Memory\n");
-  fprintf(f, "Total Size: %d\n", m_totalPoolSize);
-  fprintf(f, "Free Size: %d\n", m_freePoolSize);
+  fprintf(f, "Total Size: %lu\n", m_totalPoolSize);
+  fprintf(f, "Free Size: %lu\n", m_freePoolSize);
 
   for(i = 0; i < m_poolSize/itemsPerLine; i ++)
   {
@@ -347,7 +347,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
     {
       if(format == DUMP_HEX)
       {
-        fprintf(f, "[Address: %p] : %p",ptr, *ptr);
+        fprintf(f, "[Address: %p] : %c",ptr, *ptr);
       }
       else if(format == DUMP_CHAR)
       {
@@ -458,9 +458,9 @@ void StandardMemoryPool :: memory_pool_info()
 
   printf("Address: %p\n", m_poolMemory);
 
-  printf("Total space: %d\n", m_totalPoolSize);
+  printf("Total space: %lu\n", m_totalPoolSize);
 
-  printf("Free space: %d\n", m_freePoolSize);
+  printf("Free space: %lu\n", m_freePoolSize);
 
   printf("Trash on allocate: %d\n", m_trashOnAlloc);
 
