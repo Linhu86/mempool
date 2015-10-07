@@ -13,3 +13,5 @@ mempool.SearchResults
 *.so
 *.a
 mempool_test
+pool.xml
+

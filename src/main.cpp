@@ -8,9 +8,12 @@
 #include "memlog.hpp"
 #include <string>
 
+#define DUMP_FILE_NAME "pool.xml"
+
 /**
 *   \brief Execute a test on several pool's functionalities.
 */
+/*
 int memoryStandardUnitTest(MemoryPool* pool, int dumpMemoryStates)
 {
     // If bounds check is on, we need to alter some math here and there
@@ -132,6 +135,7 @@ int memoryStandardUnitTest(MemoryPool* pool, int dumpMemoryStates)
 
     return true;
 }
+*/
 
 // Entry point
 int main()
@@ -159,6 +163,8 @@ int main()
   {
     mem_debug_log("Integrity check fail");
   }
+
+  pool->dumpToFile(DUMP_FILE_NAME, 4, DUMP_HEX);
 
   pool->free(block);
 

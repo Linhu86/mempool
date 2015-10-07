@@ -41,8 +41,7 @@ class MemoryPoolManager
       std::map<std::string, MemoryPool*>::const_iterator it = m_pool.begin();
       for(it; it != m_pool.end(); ++it)
       {
-        it->second->dumpToFile(prefix+std::string(it->first)+".txt", 4);
-
+        it->second->dumpToFile(prefix+std::string(it->first)+".txt", 4, DUMP_HEX);
       }
     }
 
@@ -54,7 +53,7 @@ class MemoryPoolManager
       {
         if(pool == it->second)
         {
-          it->second->dumpToFile(prefix+std::string(it->first)+".txt", 4);
+          it->second->dumpToFile(prefix+std::string(it->first)+".txt", 4, DUMP_HEX);
         }
       }
     }

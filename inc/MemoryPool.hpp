@@ -16,7 +16,7 @@ class MemoryPool
     virtual void *allocate(uint32 size) = 0;
     virtual int free(void *ptr) = 0;
     virtual int integrityCheck() const = 0;
-    virtual void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const = 0;
+    virtual void dumpToFile(const std::string& fileName, const uint32 itemsPerLine, const uint32 format) const = 0;
     inline uint32 getFreePoolSize() { return m_freePoolSize; }
     inline uint32 getTotalPoolSize() { return m_totalPoolSize; }
     inline uint32 hasBoundsCheckOn() { return m_boundsCheck; }

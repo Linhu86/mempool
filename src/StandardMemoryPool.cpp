@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include <stdio.h>
-
+#include <errno.h>
 
 int Chunk :: name_set(const char *name)
 {
@@ -20,6 +20,63 @@ int Chunk :: name_set(const char *name)
   return TRUE;
 }
 
+StandardMemoryPool :: StandardMemoryPool(uint32 sizeInBytes, uint32 boundsCheck)
+{
+  m_poolSize = sizeInBytes;
+
+  m_boundsCheck = boundsCheck;
+
+  m_poolMemory = new uint8[sizeInBytes];
+
+#ifdef DEBUG_ON
+  mem_debug_log("StandardPool Constructor initialization in address %p with size %d\n", m_poolMemory, sizeInBytes);
+  printf("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d\n", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
+  if(boundsCheck){
+    mem_debug_log("Memory pool bounds check feature present.\n");
+  }
+#endif
+
+  m_freePoolSize = sizeInBytes - sizeof(Chunk);
+  m_totalPoolSize = sizeInBytes;
+
+  // Trash it if required
+  if(m_trashOnCreation)
+  {
+    memset(m_poolMemory, s_trashOnCreation, sizeInBytes);
+  }
+
+  if(m_boundsCheck)
+  {
+    m_freePoolSize -= s_boundsCheckSize * 2;
+    Chunk freeChunk(sizeInBytes - sizeof(Chunk) - 2 * s_boundsCheckSize);
+    freeChunk.name_set(MEMORY_POOL_BLOCK_NAME);
+    freeChunk.write(m_poolMemory + s_boundsCheckSize);
+    memcpy(m_poolMemory, s_startBound, s_boundsCheckSize);
+    memcpy(m_poolMemory + sizeInBytes - s_boundsCheckSize, s_endBound, s_boundsCheckSize);
+    freeChunk.m_next = NULL;
+    freeChunk.m_prev = NULL;
+  }
+  else
+  {
+    Chunk freeChunk(sizeInBytes - sizeof(Chunk));
+    freeChunk.name_set(MEMORY_POOL_BLOCK_NAME);
+    freeChunk.write(m_poolMemory);
+    freeChunk.m_next = NULL;
+    freeChunk.m_prev = NULL;
+  }
+
+#ifdef DEBUG_ON
+    dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+#endif
+}
+
+StandardMemoryPool :: ~StandardMemoryPool()
+{
+#ifdef DEBUG_ON
+  mem_debug_log("[%s] StandardPool Deonstructor deconstruction.", __FUNCTION__);
+#endif
+  delete [] m_poolMemory;
+}
 
 void *StandardMemoryPool :: allocate(uint32 size)
 {
@@ -46,7 +103,9 @@ void *StandardMemoryPool :: allocate(uint32 size)
   while(block)
   {
      if(block->m_free && block->m_userdataSize >= requiredSize)
+     {
         break;
+     }
      block = block->m_next;
   }
 
@@ -262,99 +321,70 @@ int StandardMemoryPool :: integrityCheck() const
 /**
 *	\brief		Dump the memory state to file
 */
-void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const
+void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 itemsPerLine, const uint32 format) const
 {
   FILE* f = NULL;
+  uint32 i = 0, j = 0;
+  uint8 *ptr = m_poolMemory;
+  uint32 residue = m_poolSize%itemsPerLine;
+
   f = fopen(fileName.c_str(), "w+");
-  if(f)
+
+  if(!f)
   {
-    fprintf(f, "Memory pool ----------------------------------\n");
-    fprintf(f, "Type: Standard Memory\n");
-    fprintf(f, "Total Size: %d\n", m_totalPoolSize);
-    fprintf(f, "Free Size: %d\n", m_freePoolSize);
-
-    // Now search for a block big enough
-    Chunk* block = (Chunk*)( m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
-
-    while(block)
-    {
-      if(block->m_free)
-      {
-        fprintf(f, "Free:\t0x%p [Bytes:%d]\n", block, block->m_userdataSize);
-      }
-      else
-      {
-        fprintf(f, "Used:\t0x%p [Bytes:%d]\n", block, block->m_userdataSize);
-        block = block->m_next;
-      }
-    }
-
-    fprintf(f, "\n\nMemory Dump:\n");
-    uint8* ptr = m_poolMemory;
-    uint8* charPtr = m_poolMemory;
-
-    fprintf(f, "Start: 0x%p\n", ptr);
-    uint8 i = 0;
-
-    // Write the hex memory data
-    uint32 bytesPerLine = itemsPerLine * 4;
-
-    fprintf(f, "\n0x%p: ", ptr);
-    fprintf(f, "%02x", *(ptr) );
-    ++ptr;
-
-    for(i = 1; ((uint32)(ptr - m_poolMemory) < m_totalPoolSize); ++i, ++ptr)
-    {
-      if(i == bytesPerLine)
-      {
-        // Write all the chars for this line now
-        fprintf(f, "  ", charPtr);
-        for(uint32 charI = 0; charI<bytesPerLine; ++charI, ++charPtr)
-        {
-            fprintf(f, "%c", *charPtr);
-        }
-        charPtr = ptr;
-
-        // Write the new line memory data
-        fprintf(f, "\n0x%p: ", ptr);
-        fprintf(f, "%02x", *(ptr) );
-        i = 0;
-      }
-      else
-      {
-        fprintf(f, ":%02x", *(ptr) );
-      }
-    }
-
-    // Fill any gaps in the tab
-    if( (uint32)(ptr - m_poolMemory) >= m_totalPoolSize)
-    {
-      uint32 lastLineBytes = i;
-
-      for(i; i< bytesPerLine; i++)
-      {
-        fprintf(f," --");
-      }
-
-      // Write all the chars for this line now
-      fprintf(f, "  ", charPtr);
-
-      for(uint32 charI = 0; charI<lastLineBytes; ++charI, ++charPtr)
-      {
-        fprintf(f, "%c", *charPtr);
-      }
-      charPtr = ptr;
-    }
+    mem_debug_log("File open error: %s", strerror(errno));
+    return;
   }
+
+  fprintf(f, "Memory pool ----------------------------------\n\n");
+  fprintf(f, "Type: Standard Memory\n");
+  fprintf(f, "Total Size: %d\n", m_totalPoolSize);
+  fprintf(f, "Free Size: %d\n", m_freePoolSize);
+
+  for(i = 0; i < m_poolSize/itemsPerLine; i ++)
+  {
+    for(j = 0; j < itemsPerLine; j++)
+    {
+      if(format == DUMP_HEX)
+      {
+        fprintf(f, "[Address: %p] : %p",ptr, *ptr);
+      }
+      else if(format == DUMP_CHAR)
+      {
+        fprintf(f, "[Address: %p] : %c ",ptr, *ptr);
+      }
+      else
+      {
+        mem_debug_log("Error dump format.\n");
+        return;
+      }
+
+      ptr ++;
+    }
+    fprintf(f, "\n");
+  }
+  
+  if(residue)
+  {
+    for(i = 0; i < residue; i++)
+    {
+      fprintf(f, "%c", *ptr);
+      ptr ++;
+    }
+    fprintf(f, "\n");
+  }
+
+  fprintf(f, "\n\nMemory pool ----------------------------------\n");
+  printf("\n Successful to dump memory pool.\n");
 
   fclose(f);
 }
 
 //format could be hex or char.
-void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, uint32 format) const
+void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) const
 {
-  int i = 0, j = 0;
-  int residue = 0;
+  uint32 i = 0, j = 0;
+  uint32 residue = 0;
   uint8 *ptr = m_poolMemory;
   printf("\n\n Start to dump memory pool. \n");
 
@@ -398,7 +428,7 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, uint32 format) const
 
 void StandardMemoryPool :: memory_block_list()
 {
-  int i = 1;
+  uint32 i = 1;
   Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
 
   if(block == NULL)
