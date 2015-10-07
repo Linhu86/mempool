@@ -29,7 +29,6 @@ MemoryPoolManager::MemoryPoolManager(const char* const poolsFileXML)
             TiXmlAttribute* attribute = element->FirstAttribute();
 
             char name[128] = {'\0'};
-            uint8 blockSize = 4;
             uint32 size = 1024;
             int boundCheck = false;
 

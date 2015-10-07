@@ -137,7 +137,7 @@ int memoryStandardUnitTest(MemoryPool* pool, int dumpMemoryStates)
 int main()
 {
 
-  char *str = "abcdefghijklnmopqrstuvwxyz";
+  char str[] = "abcdefghijklnmopqrstuvwxyz";
 
   StandardMemoryPool *pool = new StandardMemoryPool(1024, 1);
 
@@ -146,8 +146,6 @@ int main()
   Chunk* block = (Chunk *)pool->allocate(64);
 
   memcpy((uint8 *)block, str, strlen(str));
-
-  printf("new allocated block address: 0x%x\n", block);
 
 #ifdef DEBUG_ON
   pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);

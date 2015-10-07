@@ -28,20 +28,10 @@ class Chunk
       strncpy(m_name, DEFAULT_BLOCK_NAME, strlen(DEFAULT_BLOCK_NAME));
     }
     ~Chunk(){}
-    void write(void *src){ memcpy(src, this, sizeof(Chunk)); }
-    void read(void *dest) { memcpy (this, dest, sizeof(Chunk)); }
-    void name_set(char *name) {
-     if(strlen(name) > BLOCK_NAME_LEN)
-     {
-        mem_debug_log("memory block name length larger than 16");
-        return;
-      }
-      memset(m_name, '\0', BLOCK_NAME_LEN);
-      strncpy(m_name, name, strlen(name));
-#ifdef DEBUG_ON
-      mem_debug_log("New set memory block name: %s", m_name);
-#endif
-    }
+    inline void write(void *src){ memcpy(src, this, sizeof(Chunk)); }
+    inline void read(void *dest) { memcpy (this, dest, sizeof(Chunk)); }
+
+    int name_set(const char *name);
 
     Chunk *m_prev;
     Chunk *m_next;
@@ -73,7 +63,7 @@ class StandardMemoryPool : public MemoryPool
       m_poolMemory = new uint8[sizeInBytes];
 
 #ifdef DEBUG_ON
-      mem_debug_log("StandardPool Constructor initialization in address 0X%x with size %d\n", m_poolMemory, sizeInBytes);
+      mem_debug_log("StandardPool Constructor initialization in address %p with size %d\n", m_poolMemory, sizeInBytes);
       printf("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d\n", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
       if(boundsCheck){
         mem_debug_log("Memory pool bounds check feature present.\n");

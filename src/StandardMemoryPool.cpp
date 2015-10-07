@@ -4,10 +4,27 @@
 #include <iostream>
 #include <stdio.h>
 
+
+int Chunk :: name_set(const char *name)
+{
+  if(strlen(name) > BLOCK_NAME_LEN)
+  {
+    mem_debug_log("memory block name length larger than 16");
+    return FALSE;
+  }
+  memset(m_name, '\0', BLOCK_NAME_LEN);
+  strncpy(m_name, name, strlen(name));
+#ifdef DEBUG_ON
+  mem_debug_log("New set memory block name: %s", m_name);
+#endif
+  return TRUE;
+}
+
+
 void *StandardMemoryPool :: allocate(uint32 size)
 {
 #ifdef DEBUG_ON
-  printf("[%s] Start to allocate block with size.\n", __FUNCTION__);
+  mem_debug_log("Start to allocate block with size.");
   memory_block_list();
 #endif
   uint32 requiredSize = size + sizeof(Chunk);
@@ -31,20 +48,20 @@ void *StandardMemoryPool :: allocate(uint32 size)
   // If block is found, return NULL
   if(!block)
   {
-    mem_debug_log("Free block not found.\n");
+    mem_debug_log("Free block not found.");
     return NULL;
   }
 #ifdef DEBUG_ON
   else
   {
-    mem_debug_log("First free block address: 0x%x.\n", blockData);
+    mem_debug_log("First free block address: %p.", blockData);
   }
 #endif
 
   // If the block is valid, create a new free block with what remains of the block memory
   uint32 freeUserDataSize = block->m_userdataSize - requiredSize;
 #ifdef DEBUG_ON
-      mem_debug_log("User required allocate size: %d, block remain size:%d, sizeof(Chunk): %d\n", requiredSize, freeUserDataSize, sizeof(Chunk));
+      mem_debug_log("User required allocate size: %d, block remain size:%d, sizeof(Chunk): %d", requiredSize, freeUserDataSize, sizeof(Chunk));
 #endif
 
   if( freeUserDataSize > s_minFreeBlockSize)
@@ -53,7 +70,7 @@ void *StandardMemoryPool :: allocate(uint32 size)
     freeBlock.m_next = block->m_next;
     freeBlock.m_prev = block;
     #ifdef DEBUG_ON
-      mem_debug_log("New header saved in address: 0x%x\n", blockData + requiredSize);
+      mem_debug_log("New header saved in address: %p", blockData + requiredSize);
     #endif
 
     if(freeBlock.m_next)
@@ -334,11 +351,11 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, uint32 format) const
     {
       if(format == DUMP_HEX)
       {
-        printf("[Address: 0x%x] : 0x%x ",ptr, *ptr);
+        printf("[Address: %p] : %p",ptr, *ptr);
       }
       else if(format == DUMP_CHAR)
       {
-        printf("[Address: 0x%x] : %c ",ptr, *ptr);
+        printf("[Address: %p] : %c ",ptr, *ptr);
       }
       else
       {
@@ -354,7 +371,7 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, uint32 format) const
   {
     for(i = 0; i < residue; i++)
     {
-      printf("0x%x ", *ptr);
+      printf("%c", *ptr);
       ptr ++;
     }
     printf("\n");
@@ -379,7 +396,7 @@ void StandardMemoryPool :: memory_block_list()
 
   while(block)
   {
-    printf("[block: %d] address: 0x%x name: %s Free: %d size:%d-->\n", i, block, block->m_name, block->m_free, block->m_userdataSize);
+    printf("[block: %d] address: %p name: %s Free: %d size:%d-->\n", i, block, block->m_name, block->m_free, block->m_userdataSize);
     block = block->m_next;
     i++;
   }
@@ -394,7 +411,7 @@ void StandardMemoryPool :: memory_pool_info()
 
   printf("\n\nMemory Pool information:\n");
 
-  printf("Address: 0x%x\n", m_poolMemory);
+  printf("Address: %p\n", m_poolMemory);
 
   printf("Total space: %d\n", m_totalPoolSize);
 
