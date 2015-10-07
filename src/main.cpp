@@ -2,7 +2,6 @@
 //
 #include <stdio.h>
 #include "Allocation.hpp"
-#include "MemoryPoolManager.hpp"
 #include "StandardMemoryPool.hpp"
 #include <string.h>
 #include "memlog.hpp"
