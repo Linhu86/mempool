@@ -177,10 +177,10 @@ void *StandardMemoryPool :: allocate(uint64 size)
     memset(blockData + sizeof(Chunk), s_trashOnAllocSignature, block->m_userdataSize);
   }
 
-#if 0
+#if 1
 #ifdef DEBUG_ON
   memory_block_list();
-  dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+//  dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
   mem_debug_log("Retrun allocated block address: %p", blockData + sizeof(Chunk));
 #endif
 #endif
@@ -190,6 +190,9 @@ void *StandardMemoryPool :: allocate(uint64 size)
 
 int StandardMemoryPool :: free(void* ptr)
 {
+#ifdef DEBUG_ON
+    memory_block_list();
+#endif
     // is a valid node?
     if(!ptr)
     {
@@ -232,7 +235,7 @@ int StandardMemoryPool :: free(void* ptr)
          block->m_next->m_prev = headBlock;
 
          // Include the next node in the block size if it is free so we trash it as well
-         if( block->m_next->m_free )
+         if(block->m_next->m_free)
          {
             // We will point to next's next
             next = block->m_next->m_next;

@@ -10,7 +10,7 @@
 
 static void mem_pool_stress_test()
 {
-  int i = 0;
+  int i = 0, block_num = 0;
   char str[] = "abcdefghijklnmopqrstuvwxyz";
   Chunk * block[40] = {};
 
@@ -23,25 +23,30 @@ static void mem_pool_stress_test()
 
   for(i = 0; i < 40; i ++)
   {
+    mem_debug_log("-------------- Start to allocate memory blcok [%d].-----------------------", i+1);
+
     block[i] = (Chunk *)pool->allocate(64);
 
     if(!block[i])
     {
-      mem_debug_log("%d block allocation failed.", i);
+      mem_debug_log("%d block allocation failed.", i+1);
+      block_num = i - 1;
       break;
     }
     else
     {
-      mem_debug_log("%d block allocation success.", i);
+      mem_debug_log("%d block allocation success.", i+1);
     }
 
     memcpy((uint8 *)block[i], str, strlen(str));
   }
 
 #ifdef DEBUG_ON
-  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+//  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+  pool->memory_block_list();
 #endif
 
+#if 0
   if(pool->integrityCheck() == TRUE)
   {
     mem_debug_log("Integrity check successful");
@@ -50,19 +55,21 @@ static void mem_pool_stress_test()
   {
     mem_debug_log("Integrity check fail");
   }
-
   pool->dumpToFile(DUMP_FILE_NAME, DUMP_ELEMENT_PER_LINE, DUMP_HEX);
+#endif
 
-  for(i = 0; i < 40; i ++)
+  for(i = block_num; i >= 0 ; i --)
   {
+    mem_debug_log("-------------- Start to free memory blcok [%d].-----------------------", i+1);
+
     if(pool->free(block[i]) == FALSE)
     {
-      mem_debug_log("%d block free failed.", i);
+      mem_debug_log("%d block free failed.", i+1);
       break;
     }
     else
     {
-      mem_debug_log("%d block free success.", i);
+      mem_debug_log("%d block free success.", i+1);
     }
   }
 
