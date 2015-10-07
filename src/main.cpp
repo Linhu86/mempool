@@ -36,7 +36,7 @@ static void mem_pool_stress_test()
       mem_debug_log("%d block allocation success.", i);
     }
 
-    memcpy((uint8 *)block, str, strlen(str));
+    memcpy((uint8 *)block[i], str, strlen(str));
   }
 
 #ifdef DEBUG_ON
@@ -58,7 +58,7 @@ static void mem_pool_stress_test()
   {
     block[i] = (Chunk *)pool->allocate(64);
 
-    if(pool->free(block) == FALSE)
+    if(pool->free(block[i]) == FALSE)
     {
       mem_debug_log("%d block free failed.", i);
       break;
