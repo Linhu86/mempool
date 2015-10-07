@@ -1,7 +1,6 @@
 // MemoryPool.cpp : Defines the entry point for the console application.
 //
 #include <stdio.h>
-#include "Allocation.hpp"
 #include "StandardMemoryPool.hpp"
 #include <string.h>
 #include "memlog.hpp"
@@ -56,8 +55,6 @@ static void mem_pool_stress_test()
 
   for(i = 0; i < 40; i ++)
   {
-    block[i] = (Chunk *)pool->allocate(64);
-
     if(pool->free(block[i]) == FALSE)
     {
       mem_debug_log("%d block free failed.", i);

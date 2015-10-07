@@ -80,9 +80,11 @@ StandardMemoryPool :: ~StandardMemoryPool()
 
 void *StandardMemoryPool :: allocate(uint64 size)
 {
+#if 0
 #ifdef DEBUG_ON
   mem_debug_log("Start to allocate block with size.");
   memory_block_list();
+#endif
 #endif
 
   if(size > MAX_MEMPOOL_SIZE)
@@ -127,7 +129,7 @@ void *StandardMemoryPool :: allocate(uint64 size)
   // If the block is valid, create a new free block with what remains of the block memory
   uint64 freeUserDataSize = block->m_userdataSize - requiredSize;
 #ifdef DEBUG_ON
-      mem_debug_log("User required allocate size: %lu, block remain size:%lu, sizeof(Chunk): %lu", requiredSize, freeUserDataSize, sizeof(Chunk));
+  mem_debug_log("User required allocate size: %lu, block remain size:%lu, sizeof(Chunk): %lu", requiredSize, freeUserDataSize, sizeof(Chunk));
 #endif
 
   if( freeUserDataSize > s_minFreeBlockSize)
@@ -175,11 +177,12 @@ void *StandardMemoryPool :: allocate(uint64 size)
     memset(blockData + sizeof(Chunk), s_trashOnAllocSignature, block->m_userdataSize);
   }
 
+#if 0
 #ifdef DEBUG_ON
-  memory_pool_info();
   memory_block_list();
   dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
   mem_debug_log("Retrun allocated block address: %p", blockData + sizeof(Chunk));
+#endif
 #endif
   return (blockData + sizeof(Chunk));
 }
