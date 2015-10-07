@@ -14,7 +14,7 @@ class MemoryPool
 {
   public:
     virtual void *allocate(uint32 size) = 0;
-    virtual void free(void *ptr) = 0;
+    virtual int free(void *ptr) = 0;
     virtual int integrityCheck() const = 0;
     virtual void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const = 0;
     inline uint32 getFreePoolSize() { return m_freePoolSize; }
@@ -29,7 +29,7 @@ class MemoryPool
     static const uint8 s_endBound[s_boundsCheckSize];
 
   protected:
-     MemoryPool() 
+     MemoryPool()
         : m_totalPoolSize(0),
           m_freePoolSize(0),
           m_boundsCheck(1),
@@ -37,7 +37,7 @@ class MemoryPool
           m_trashOnAlloc(1),
           m_trashOnFree(1)
           {};
-     
+
     virtual ~MemoryPool(){}
 
     uint32      m_totalPoolSize;

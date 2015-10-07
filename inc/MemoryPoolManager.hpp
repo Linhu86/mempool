@@ -11,9 +11,9 @@ class MemoryPoolManager
 {
   public:
     static const char* const c_poolsFileXML;
-    static MemoryPoolManager& it() { 
-      static MemoryPoolManager instance(c_poolsFileXML); 
-      return instance; 
+    static MemoryPoolManager& it() {
+      static MemoryPoolManager instance(c_poolsFileXML);
+      return instance;
     }
 
     MemoryPool * getPool(const char * const name)
@@ -37,8 +37,8 @@ class MemoryPoolManager
 
     /* Dump all the pools to some txt files*/
     void  dumpAllPools(const std::string& prefix) const
-    { 
-      std::map<std::string, MemoryPool*>::const_iterator it = m_pool.begin(); 
+    {
+      std::map<std::string, MemoryPool*>::const_iterator it = m_pool.begin();
       for(it; it != m_pool.end(); ++it)
       {
         it->second->dumpToFile(prefix+std::string(it->first)+".txt", 4);
@@ -48,8 +48,8 @@ class MemoryPoolManager
 
     /* Dump pool to some txt files*/
     void dumpPool(const std::string& prefix, const MemoryPool* pool) const
-    { 
-      std::map<std::string, MemoryPool*>::const_iterator it = m_pool.begin(); 
+    {
+      std::map<std::string, MemoryPool*>::const_iterator it = m_pool.begin();
       for(it; it != m_pool.end(); ++it)
       {
         if(pool == it->second)
@@ -58,7 +58,7 @@ class MemoryPoolManager
         }
       }
     }
-  
+
   private:
     MemoryPoolManager(const char * const poolsFileXML);
     int isAValidPoolType(const char* poolType) const;

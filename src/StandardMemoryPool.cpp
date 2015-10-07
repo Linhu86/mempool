@@ -27,18 +27,25 @@ void *StandardMemoryPool :: allocate(uint32 size)
   mem_debug_log("Start to allocate block with size.");
   memory_block_list();
 #endif
+
+  if(size < 0 || size > MAX_MEMPOOL_SIZE)
+  {
+    mem_debug_log("Wrong memory pool size.\n");
+    return NULL;
+  }
+
   uint32 requiredSize = size + sizeof(Chunk);
 
   if(m_boundsCheck)
   {
     requiredSize += s_boundsCheckSize *2;
   }
-  
+
   Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
 
   while(block)
   {
-     if(block->m_free && block->m_userdataSize >= requiredSize ) 
+     if(block->m_free && block->m_userdataSize >= requiredSize)
         break;
      block = block->m_next;
   }
@@ -69,20 +76,21 @@ void *StandardMemoryPool :: allocate(uint32 size)
     Chunk freeBlock(freeUserDataSize);
     freeBlock.m_next = block->m_next;
     freeBlock.m_prev = block;
-    #ifdef DEBUG_ON
-      mem_debug_log("New header saved in address: %p", blockData + requiredSize);
-    #endif
+
+#ifdef DEBUG_ON
+    mem_debug_log("New header saved in address: %p", blockData + requiredSize);
+#endif
 
     if(freeBlock.m_next)
     {
       freeBlock.m_next->m_prev = (Chunk*)(blockData + requiredSize);
     }
 
-    freeBlock.write( blockData + requiredSize );
+    freeBlock.write(blockData + requiredSize);
 
     if(m_boundsCheck)
     {
-       memcpy( blockData + requiredSize - s_boundsCheckSize, s_startBound, s_boundsCheckSize );
+       memcpy(blockData + requiredSize - s_boundsCheckSize, s_startBound, s_boundsCheckSize);
     }
 
     block->m_next = (Chunk*)(blockData + requiredSize);
@@ -90,7 +98,7 @@ void *StandardMemoryPool :: allocate(uint32 size)
   }
 
   // If a block is found, update the pool size
-   m_freePoolSize -= block->m_userdataSize;
+  m_freePoolSize -= block->m_userdataSize;
 
   // Set the memory block
   block->m_free = false;
@@ -98,8 +106,8 @@ void *StandardMemoryPool :: allocate(uint32 size)
   // Move the memory around if guards are needed
   if(m_boundsCheck)
   {
-    memcpy( blockData - s_boundsCheckSize, s_startBound, s_boundsCheckSize );
-    memcpy( blockData + sizeof(Chunk) + block->m_userdataSize, s_endBound, s_boundsCheckSize );
+    memcpy(blockData - s_boundsCheckSize, s_startBound, s_boundsCheckSize);
+    memcpy(blockData + sizeof(Chunk) + block->m_userdataSize, s_endBound, s_boundsCheckSize);
   }
 
   //Trash on alloc if required
@@ -117,13 +125,14 @@ void *StandardMemoryPool :: allocate(uint32 size)
   return (blockData + sizeof(Chunk));
 }
 
-void StandardMemoryPool :: free(void* ptr)
+
+int StandardMemoryPool :: free(void* ptr)
 {
     // is a valid node?
     if(!ptr)
     {
       mem_debug_log("Block pointer to free is not valid.");
-      return;
+      return FALSE;
     }
 
     Chunk* block = (Chunk*)((uint8 *)ptr - sizeof(Chunk));
@@ -133,11 +142,11 @@ void StandardMemoryPool :: free(void* ptr)
     if(block->m_free)
     {
       mem_debug_log("Block is already freed.");
-      return;
+      return FALSE;
     }
 
     uint32 fullBlockSize = block->m_userdataSize + sizeof(Chunk) + (m_boundsCheck == 1 ? s_boundsCheckSize * 2 : 0);
-    
+
     m_freePoolSize += block->m_userdataSize;
 
     Chunk* headBlock = block;
@@ -202,7 +211,7 @@ void StandardMemoryPool :: free(void* ptr)
 
   uint32 freeUserDataSize = fullBlockSize - sizeof(Chunk);
 
-  freeUserDataSize = (m_boundsCheck == 1) ? freeUserDataSize - s_boundsCheckSize * 2 : freeUserDataSize;    
+  freeUserDataSize = (m_boundsCheck == 1) ? freeUserDataSize - s_boundsCheckSize * 2 : freeUserDataSize;
 
   Chunk freeBlock(freeUserDataSize);
   freeBlock.m_prev = prev;
@@ -212,13 +221,15 @@ void StandardMemoryPool :: free(void* ptr)
   // Move the memory around if guards are needed
   if(m_boundsCheck)
   {
-    memcpy( freeBlockStart - s_boundsCheckSize, s_startBound, s_boundsCheckSize );
-    memcpy( freeBlockStart + sizeof(Chunk) + freeUserDataSize, s_endBound, s_boundsCheckSize );
+    memcpy(freeBlockStart - s_boundsCheckSize, s_startBound, s_boundsCheckSize);
+    memcpy(freeBlockStart + sizeof(Chunk) + freeUserDataSize, s_endBound, s_boundsCheckSize);
   }
 
 #ifdef DEBUG_ON
   memory_block_list();
 #endif
+
+  return TRUE;
 }
 
 /**
@@ -233,15 +244,19 @@ int StandardMemoryPool :: integrityCheck() const
     while(temp != NULL)
     {
       if(memcmp(((uint8*)temp) - s_boundsCheckSize, s_startBound, s_boundsCheckSize) != 0)
-        return false; 
+      {
+        return FALSE;
+      }
 
       if(memcmp(((uint8*)temp) + sizeof(Chunk) + temp->m_userdataSize, s_endBound, s_boundsCheckSize) != 0)
-        return false; 
+      {
+        return FALSE;
+      }
 
       temp = temp->m_next;
     }
   }
-  return true;
+  return TRUE;
 }
 
 /**
@@ -325,7 +340,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
       fprintf(f, "  ", charPtr);
 
       for(uint32 charI = 0; charI<lastLineBytes; ++charI, ++charPtr)
-      {   
+      {
         fprintf(f, "%c", *charPtr);
       }
       charPtr = ptr;
@@ -341,7 +356,7 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, uint32 format) const
   int i = 0, j = 0;
   int residue = 0;
   uint8 *ptr = m_poolMemory;
-  printf("\n\n Start to dump memory pool. \n");  
+  printf("\n\n Start to dump memory pool. \n");
 
   residue = m_poolSize%ElemInLine;
 

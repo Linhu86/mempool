@@ -151,6 +151,15 @@ int main()
   pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
 #endif
 
+  if(pool->integrityCheck() == TRUE)
+  {
+    mem_debug_log("Integrity check successful");
+  }
+  else
+  {
+    mem_debug_log("Integrity check fail");
+  }
+
   pool->free(block);
 
 #ifdef DEBUG_ON

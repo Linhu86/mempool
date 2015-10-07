@@ -8,6 +8,8 @@
 #include <string>
 #include <string.h>
 
+//max memory pool size 1G.
+#define MAX_MEMPOOL_SIZE 2*1024*1024*1024
 #define DUMP_ELEMENT_PER_LINE 4
 #define BLOCK_NAME_LEN 16
 #define DEFAULT_BLOCK_NAME "unknown"
@@ -44,7 +46,7 @@ class StandardMemoryPool : public MemoryPool
 {
   public:
     void *allocate(uint32 size);
-    void free(void *ptr);
+    int free(void *ptr);
     int integrityCheck() const;
     void dumpToFile(const std::string& fileName, const uint32 itemsPerLine) const;
     void dumpToStdOut(uint32 ElemInLine, uint32 format) const;
