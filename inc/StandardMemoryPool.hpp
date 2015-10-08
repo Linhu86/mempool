@@ -8,7 +8,7 @@
 #include <string>
 #include <string.h>
 
-//max memory pool size 1G.
+//max memory pool size 2G.
 #define MAX_MEMPOOL_SIZE 2*1024*1024*1024UL
 #define DUMP_ELEMENT_PER_LINE 4
 #define BLOCK_NAME_LEN 16

@@ -14,9 +14,15 @@
 #define TEST_POOL_VOL 2048
 #define TEST_BLOCK_SIZE 64
 
+static Chunk *block[TEST_BLOCK_NUM] = {};
+static StandardMemoryPool *pool = new StandardMemoryPool(TEST_POOL_VOL, 1);
+
+
 static void print_block_array(Chunk *block_array[], uint32 length)
 {
   uint32 i = 0;
+
+  mem_debug_log("\nStart to print all block array.");
 
   if(!block_array)
   {
@@ -34,11 +40,13 @@ static void print_block_array(Chunk *block_array[], uint32 length)
 
   for(i = 0; i < length; i++)
   {
-    mem_debug_log("[element %d]: %p", i+1, block_array[i]);
+    printf("[element %d]: %p\n", i+1, block_array[i]);
   }
+
+  printf("End to print all block array.\n\n\n");
 }
 
-static int get_array_avail_length(Chunk *block_array[], int array_length)
+static int get_array_avail_length(Chunk *block_array[], uint32 array_length)
 {
   uint32 i = 0;
   int ret_val = 0;
@@ -113,13 +121,9 @@ static Chunk* get_random_block(Chunk *block_array[], uint32 block_size, uint32 *
   return ret_block;
 }
 
-static void mem_pool_stress_test()
+static void mem_pool_stress_test_init()
 {
-  uint32 i = 0, block_num = 0, block_free_idx = 0;
-  char str[] = "abcdefghijklnmopqrstuvwxyz";
-  Chunk *block[TEST_BLOCK_NUM] = {};
-  Chunk *block_free = NULL;
-
+  uint32 i = 0;
   for(i = 0; i < TEST_BLOCK_NUM; i++)
   {
     block[i] = NULL;
@@ -128,13 +132,17 @@ static void mem_pool_stress_test()
 #ifdef DEBUG_ON
   print_block_array(block, TEST_BLOCK_NUM);
 #endif
+}
+
+static uint32 mem_pool_stress_test_allocate()
+{
+  uint32 i = 0, block_num = 0;
+  char str[] = "abcdefghijklnmopqrstuvwxyz";
 
   printf("\n\n\n\n");
   mem_debug_log("=================================================================================");
   mem_debug_log("==========================Start to test allocate=================================");
   mem_debug_log("=================================================================================");
-
-  StandardMemoryPool *pool = new StandardMemoryPool(TEST_POOL_VOL, 1);
 
   for(i = 0; i < TEST_BLOCK_NUM; i ++)
   {
@@ -156,15 +164,17 @@ static void mem_pool_stress_test()
     memcpy((uint8 *)block[i], str, strlen(str));
   }
 
-mem_debug_log("=================================================================================");
-mem_debug_log("==========================End to test mem allocate===============================");
-mem_debug_log("=================================================================================");
-printf("\n\n\n\n");
+  mem_debug_log("=================================================================================");
+  mem_debug_log("==========================End to test mem allocate===============================");
+  mem_debug_log("=================================================================================");
+  printf("\n\n\n\n");
+  return block_num;
+}
 
-
-
+static void mem_pool_stress_test_check()
+{
 #ifdef DEBUG_ON
-//  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+  //  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
   pool->memory_block_list();
   print_block_array(block, TEST_BLOCK_NUM);
 #endif
@@ -178,7 +188,13 @@ printf("\n\n\n\n");
     mem_debug_log("Integrity check fail");
   }
   pool->dumpToFile(DUMP_FILE_NAME, DUMP_ELEMENT_PER_LINE, DUMP_HEX);
+}
 
+
+static void mem_pool_stress_test_free(uint32 block_num)
+{
+  uint32 i = 0, block_free_idx = 0;
+  Chunk *block_free = NULL;
 
   printf("\n\n\n\n");
   mem_debug_log("=================================================================================");
@@ -208,15 +224,35 @@ printf("\n\n\n\n");
     }
   }
 
-printf("\n\n\n\n");
-mem_debug_log("=================================================================================");
-mem_debug_log("==========================End to test free ======================================");
-mem_debug_log("=================================================================================");
+  printf("\n\n\n\n");
+  mem_debug_log("=================================================================================");
+  mem_debug_log("==========================End to test free ======================================");
+  mem_debug_log("=================================================================================");
 
+}
 
+static void mem_pool_stress_test_deinit()
+{
 #ifdef DEBUG_ON
   pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
 #endif
+
+  delete pool;
+}
+
+static void mem_pool_stress_test()
+{
+  uint32 block_num = 0;
+
+  mem_pool_stress_test_init();
+
+  block_num = mem_pool_stress_test_allocate();
+
+  mem_pool_stress_test_check();
+
+  mem_pool_stress_test_free(block_num);
+
+  mem_pool_stress_test_deinit();
 }
 
 // Entry point
