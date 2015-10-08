@@ -10,9 +10,10 @@
 #include "memlog.hpp"
 
 #define DUMP_FILE_NAME "pool.xml"
-#define TEST_BLOCK_NUM 40
-#define TEST_POOL_VOL 2048
-#define TEST_BLOCK_SIZE 64
+#define TEST_MALLOC_TIMES 11914
+#define TEST_BLOCK_NUM 40*64*96 // Could allocate 11914 blocks
+#define TEST_POOL_VOL 1024*1024
+#define TEST_BLOCK_SIZE 16
 
 static Chunk *block[TEST_BLOCK_NUM] = {};
 static StandardMemoryPool *pool = new StandardMemoryPool(TEST_POOL_VOL, 1);
@@ -310,17 +311,25 @@ static void mem_pool_stress_test_deinit()
 static void mem_pool_stress_test()
 {
   uint32 block_num = 0;
+  clock_t time_start, time_stop;
 
   mem_pool_stress_test_init();
 
+  time_start = clock();
+
   block_num = mem_pool_stress_test_allocate();
 
-  mem_pool_stress_test_check();
+//  mem_pool_stress_test_check();
 
   mem_pool_stress_test_free(block_num);
 
+  time_stop = clock();
+
   mem_pool_stress_test_deinit();
+
+  printf("Memory Pool test execution time: %f s\n", (double)(time_stop-time_start)/CLOCKS_PER_SEC);
 }
+
 
 // Entry point
 int main()
