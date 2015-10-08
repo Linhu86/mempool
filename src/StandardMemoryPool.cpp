@@ -75,7 +75,7 @@ StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
   }
 
 #ifdef MEM_DEBUG_ON
-    dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+    dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 #endif
 }
 
@@ -183,7 +183,7 @@ void *StandardMemoryPool :: allocate(uint64 size)
 
 #ifdef MEM_DEBUG_ON
 //memory_block_list();
-//dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+//dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 #endif
 
   //Log
@@ -350,7 +350,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
     return;
   }
 
-  fprintf(f, "Memory pool ----------------------------------\n\n");
+  fprintf(f, "Memory pool ------------------------------------------------------------------------------------------------\n\n");
   fprintf(f, "Type: Standard Memory\n");
   fprintf(f, "Total Size: %lu\n", m_totalPoolSize);
   fprintf(f, "Free Size: %lu\n", m_freePoolSize);
@@ -388,7 +388,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
     fprintf(f, "\n");
   }
 
-  fprintf(f, "\n\nMemory pool ----------------------------------\n");
+  fprintf(f, "\n\nMemory pool ------------------------------------------------------------------------------------------------\n");
 
   mem_debug_log("Successful to dump memory pool.");
 
@@ -401,10 +401,15 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
   uint32 i = 0, j = 0;
   uint32 residue = 0;
   uint8 *ptr = m_poolMemory;
-  printf("\n\n Start to dump memory pool. \n");
-  printf("Type: Standard Memory\n");
-  printf("Total Size: %lu\n", m_totalPoolSize);
-  printf("Free Size: %lu\n", m_freePoolSize);
+
+  printf("\n\n");
+
+  mem_debug_log("\n\nStart to dump memory pool.");
+  mem_debug_log("Type: Standard Memory");
+  mem_debug_log("Total Size: %lu", m_totalPoolSize);
+  mem_debug_log("Free Size: %lu", m_freePoolSize);
+
+  printf("\n\nMemory pool ------------------------------------------------------------------------------------------------\n\n");
 
   residue = m_poolSize%ElemInLine;
 
@@ -440,7 +445,10 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
     printf("\n");
   }
 
-  printf("\n\n Finish to dump memory pool.\n");
+  printf("\n\nMemory pool ------------------------------------------------------------------------------------------------\n");
+  mem_debug_log("Finish to dump memory pool.");
+
+  printf("\n\n");
 }
 
 

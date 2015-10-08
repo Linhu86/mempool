@@ -54,12 +54,17 @@ static void print_block_array(Chunk *block_array[], uint32 length)
 
   test_debug_log("print data array:");
 
+  printf("\n\nBlock table: ------------------------\n\n");
+
   for(i = 0; i < length; i++)
   {
     printf("[element %d]: %p\n", i+1, block_array[i]);
   }
 
-  test_debug_log("End to print all block array.\n\n\n");
+  printf("\n\nBlock table: ------------------------\n\n");
+
+  test_debug_log("End to print all block array.");
+
 }
 
 static int get_array_avail_length(Chunk *block_array[], uint32 array_length)
@@ -166,9 +171,12 @@ static uint32 mem_pool_stress_test_allocate()
   test_debug_log("==========================Start to test allocate=================================");
   test_debug_log("=================================================================================");
 
+#ifdef TEST_DEBUG_ON
+  printf("\n\n");
+#endif
+
   for(i = 0; i < TEST_BLOCK_NUM; i ++)
   {
-
     test_debug_log("-------------- Start to allocate memory blcok [%d].-----------------------", i+1);
 
     block[i] = (Chunk *)pool->allocate(TEST_BLOCK_SIZE);
@@ -182,6 +190,11 @@ static uint32 mem_pool_stress_test_allocate()
     else
     {
       test_debug_log("%d block allocation success.", i+1);
+
+#ifdef TEST_DEBUG_ON
+      printf("----------------------------------------------------------------------------------------------------------\n\n");
+#endif
+
     }
 
     memcpy((uint8 *)block[i], str, strlen(str));
@@ -201,8 +214,14 @@ static uint32 mem_pool_stress_test_allocate()
 
 static void mem_pool_stress_test_check()
 {
+  //Log
+  test_debug_log("=================================================================================");
+  test_debug_log("==========================Start to mem integrity check===========================");
+  test_debug_log("=================================================================================");
+
 #ifdef TEST_DEBUG_ON
-  //pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+  printf("\n\n");
+  //pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
   pool->memory_block_list();
   print_block_array(block, TEST_BLOCK_NUM);
 #endif
@@ -216,6 +235,14 @@ static void mem_pool_stress_test_check()
     test_debug_log("Integrity check fail");
   }
   pool->dumpToFile(DUMP_FILE_NAME, DUMP_ELEMENT_PER_LINE, DUMP_HEX);
+  //Log
+  test_debug_log("=================================================================================");
+  test_debug_log("==========================End to mem integrity check===========================");
+  test_debug_log("=================================================================================");
+
+#ifdef TEST_DEBUG_ON
+  printf("\n\n\n\n");
+#endif
 }
 
 
@@ -233,6 +260,9 @@ static void mem_pool_stress_test_free(uint32 block_num)
   test_debug_log("==========================Start to test free ====================================");
   test_debug_log("=================================================================================");
 
+#ifdef TEST_DEBUG_ON
+    printf("\n\n");
+#endif
 
   for(i = block_num; i >= 0 ; i --)
   {
@@ -241,8 +271,7 @@ static void mem_pool_stress_test_free(uint32 block_num)
 
     //Log
     test_debug_log("-------------- Start to free memory blcok [%d].-----------------------", block_free_idx);
-    test_debug_log("Get a ramdom blcok: %p\n", block_free);
-    
+
 #ifdef TEST_DEBUG_ON
     print_block_array(block, TEST_BLOCK_NUM);
 #endif
@@ -255,6 +284,9 @@ static void mem_pool_stress_test_free(uint32 block_num)
     else
     {
       test_debug_log("%d block free success.", block_free_idx);
+#ifdef TEST_DEBUG_ON
+      printf("--------------------------------------------------------------------------------------------------\n\n");
+#endif
     }
   }
 
@@ -269,7 +301,7 @@ static void mem_pool_stress_test_free(uint32 block_num)
 static void mem_pool_stress_test_deinit()
 {
 #ifdef TEST_DEBUG_ON
-  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+  pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 #endif
 
   delete pool;
