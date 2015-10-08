@@ -9,20 +9,22 @@ int Chunk :: name_set(const char *name)
 {
   if(!name)
   {
-    mem_debug_log("memory block name is NULL.");
+    mem_error_log("memory block name is NULL.");
     return FALSE;
   }
 
   if(strlen(name) > BLOCK_NAME_LEN)
   {
-    mem_debug_log("memory block name length larger than 16.");
+    mem_error_log("memory block name length larger than 16.");
     return FALSE;
   }
+
   memset(m_name, '\0', BLOCK_NAME_LEN);
   strncpy(m_name, name, strlen(name));
-#ifdef DEBUG_ON
+
+  //Log
   mem_debug_log("New set memory block name: %s", m_name);
-#endif
+
   return TRUE;
 }
 
@@ -30,7 +32,7 @@ StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
 {
   if(!sizeInBytes)
   {
-    mem_debug_log("Can not create memory pool with size 0");
+    mem_error_log("Can not create memory pool with size 0");
   }
 
   m_poolSize = sizeInBytes;
@@ -39,13 +41,9 @@ StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
 
   m_poolMemory = new uint8[sizeInBytes];
 
-#ifdef DEBUG_ON
+  //Log
   mem_debug_log("StandardPool Constructor initialization in address %p with size %lu\n", m_poolMemory, sizeInBytes);
   mem_debug_log("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
-  if(boundsCheck){
-    mem_debug_log("Memory pool bounds check feature present.\n");
-  }
-#endif
 
   m_freePoolSize = sizeInBytes - sizeof(Chunk);
   m_totalPoolSize = sizeInBytes;
@@ -76,31 +74,29 @@ StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
     freeChunk.m_prev = NULL;
   }
 
-#ifdef DEBUG_ON
+#ifdef MEM_DEBUG_ON
     dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
 #endif
 }
 
 StandardMemoryPool :: ~StandardMemoryPool()
 {
-#ifdef DEBUG_ON
-  mem_debug_log("StandardPool Deonstructor deconstruction.");
-#endif
+  mem_debug_log("StandardPool Deconstructor deconstruction.");
+
   delete [] m_poolMemory;
 }
 
 void *StandardMemoryPool :: allocate(uint64 size)
 {
-#if 0
-#ifdef DEBUG_ON
   mem_debug_log("Start to allocate block with size.");
+
+#ifdef MEM_DEBUG_ON
   memory_block_list();
-#endif
 #endif
 
   if(size > MAX_MEMPOOL_SIZE)
   {
-    mem_debug_log("Wrong memory pool size.\n");
+    mem_error_log("Wrong memory pool size.\n");
     return NULL;
   }
 
@@ -127,21 +123,19 @@ void *StandardMemoryPool :: allocate(uint64 size)
   // If block is found, return NULL
   if(!block)
   {
-    mem_debug_log("Free block not found.");
+    mem_error_log("Free block not found.");
     return NULL;
   }
-#ifdef DEBUG_ON
   else
   {
     mem_debug_log("First free block address: %p.", blockData);
   }
-#endif
 
   // If the block is valid, create a new free block with what remains of the block memory
   uint64 freeUserDataSize = block->m_userdataSize - requiredSize;
-#ifdef DEBUG_ON
+
+  //Log
   mem_debug_log("User required allocate size: %lu, block remain size:%lu, sizeof(Chunk): %lu", requiredSize, freeUserDataSize, sizeof(Chunk));
-#endif
 
   if( freeUserDataSize > s_minFreeBlockSize)
   {
@@ -149,9 +143,8 @@ void *StandardMemoryPool :: allocate(uint64 size)
     freeBlock.m_next = block->m_next;
     freeBlock.m_prev = block;
 
-#ifdef DEBUG_ON
+    //Log
     mem_debug_log("New header saved in address: %p", blockData + requiredSize);
-#endif
 
     if(freeBlock.m_next)
     {
@@ -188,29 +181,30 @@ void *StandardMemoryPool :: allocate(uint64 size)
     memset(blockData + sizeof(Chunk), s_trashOnAllocSignature, block->m_userdataSize);
   }
 
-#if 1
-#ifdef DEBUG_ON
-  memory_block_list();
-//  dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+#ifdef MEM_DEBUG_ON
+//memory_block_list();
+//dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_CHAR);
+#endif
+
+  //Log
   mem_debug_log("Retrun allocated block address: %p", blockData + sizeof(Chunk));
   mem_debug_log("Type: Standard Memory");
   mem_debug_log("Total Size: %lu", m_totalPoolSize);
   mem_debug_log("Free Size: %lu", m_freePoolSize);
-#endif
-#endif
+
   return (blockData + sizeof(Chunk));
 }
 
 
 int StandardMemoryPool :: free(void* ptr)
 {
-#ifdef DEBUG_ON
-    memory_block_list();
+#ifdef MEM_DEBUG_ON
+//    memory_block_list();
 #endif
     // is a valid node?
     if(!ptr)
     {
-      mem_debug_log("Block pointer to free is not valid.");
+      mem_error_log("Block pointer to free is not valid.");
       return FALSE;
     }
 
@@ -220,7 +214,7 @@ int StandardMemoryPool :: free(void* ptr)
 
     if(block->m_free)
     {
-      mem_debug_log("Block is already freed.");
+      mem_error_log("Block is already freed.");
       return FALSE;
     }
 
@@ -304,8 +298,8 @@ int StandardMemoryPool :: free(void* ptr)
     memcpy(freeBlockStart + sizeof(Chunk) + freeUserDataSize, s_endBound, s_boundsCheckSize);
   }
 
-#ifdef DEBUG_ON
-  memory_block_list();
+#ifdef MEM_DEBUG_ON
+//  memory_block_list();
 #endif
 
   return TRUE;
@@ -352,7 +346,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
 
   if(!f)
   {
-    mem_debug_log("File open error: %s", strerror(errno));
+    mem_error_log("File open error: %s", strerror(errno));
     return;
   }
 
@@ -375,7 +369,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
       }
       else
       {
-        mem_debug_log("Error dump format.\n");
+        mem_error_log("Error dump format.\n");
         return;
       }
 
@@ -395,7 +389,9 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
   }
 
   fprintf(f, "\n\nMemory pool ----------------------------------\n");
+
   mem_debug_log("Successful to dump memory pool.");
+
   fclose(f);
 }
 
@@ -426,7 +422,7 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
       }
       else
       {
-        mem_debug_log("Error dump format.\n");
+        mem_error_log("Error dump format.\n");
         return;
       }
       ptr ++;
@@ -455,7 +451,7 @@ void StandardMemoryPool :: memory_block_list()
 
   if(block == NULL)
   {
-    mem_debug_log("block list is NULL.");
+    mem_error_log("block list is NULL.");
     return;
   }
 
