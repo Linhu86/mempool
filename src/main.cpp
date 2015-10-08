@@ -10,13 +10,15 @@
 #include "memlog.hpp"
 
 #define DUMP_FILE_NAME "pool.xml"
-#define TEST_MALLOC_TIMES 11914
-#define TEST_BLOCK_NUM 40*64*96 // Could allocate 11914 blocks
-#define TEST_POOL_VOL 1024*1024
+#define TEST_MALLOC_TIMES 11915
+#define TEST_BLOCK_NUM 40  *1024*4 // Could allocate 11914 blocks
+#define TEST_POOL_VOL 1024 *1024
 #define TEST_BLOCK_SIZE 16
 
 static Chunk *block[TEST_BLOCK_NUM] = {};
 static StandardMemoryPool *pool = new StandardMemoryPool(TEST_POOL_VOL, 1);
+
+static char *malloc_block[TEST_MALLOC_TIMES] = {};
 
 #ifdef TEST_DEBUG_ON
 #define test_debug_log(fmt, ...) printf("[%s]"#fmt"\n", __FUNCTION__, ##__VA_ARGS__)
@@ -247,7 +249,7 @@ static void mem_pool_stress_test_check()
 }
 
 
-static void mem_pool_stress_test_free(uint32 block_num)
+static void mem_pool_stress_test_free_random(uint32 block_num)
 {
   uint32 i = 0, block_free_idx = 0;
   Chunk *block_free = NULL;
@@ -299,6 +301,57 @@ static void mem_pool_stress_test_free(uint32 block_num)
   test_debug_log("=================================================================================");
 }
 
+static void mem_pool_stress_test_free_squence(uint32 block_num)
+{
+  uint32 i = 0, block_free_idx = 0;
+
+#ifdef TEST_DEBUG_ON
+  printf("\n\n\n\n");
+#endif
+
+  //Log
+  test_debug_log("=================================================================================");
+  test_debug_log("==========================Start to test free %d block ==========================", block_num+1);
+  test_debug_log("=================================================================================");
+
+#ifdef TEST_DEBUG_ON
+    printf("\n\n");
+#endif
+
+  for(i = block_num+1; i > 0 ; i --)
+  {
+    //Log
+    test_debug_log("-------------- Start to free memory blcok [%d].-----------------------", i);
+
+#ifdef TEST_DEBUG_ON
+    print_block_array(block, TEST_BLOCK_NUM);
+#endif
+
+    if(pool->free(block[i-1]) == FALSE)
+    {
+      test_error_log("%d block free failed.", i);
+      break;
+    }
+    else
+    {
+      test_debug_log("%d block free success.", i);
+      block[i] = NULL;
+#ifdef TEST_DEBUG_ON
+      printf("--------------------------------------------------------------------------------------------------\n\n");
+#endif
+    }
+  }
+
+#ifdef TEST_DEBUG_ON
+  printf("\n\n\n\n");
+#endif
+  test_debug_log("=================================================================================");
+  test_debug_log("==========================End to test free ======================================");
+  test_debug_log("=================================================================================");
+}
+
+
+
 static void mem_pool_stress_test_deinit()
 {
 #ifdef TEST_DEBUG_ON
@@ -319,11 +372,15 @@ static void mem_pool_stress_test()
 
   block_num = mem_pool_stress_test_allocate();
 
-//  mem_pool_stress_test_check();
+  mem_pool_stress_test_check();
 
-  mem_pool_stress_test_free(block_num);
+ // mem_pool_stress_test_free_random(block_num);
+
+  mem_pool_stress_test_free_squence(block_num);
 
   time_stop = clock();
+
+  pool->dumpToFile(DUMP_FILE_NAME, DUMP_ELEMENT_PER_LINE, DUMP_HEX);
 
   mem_pool_stress_test_deinit();
 
@@ -331,10 +388,41 @@ static void mem_pool_stress_test()
 }
 
 
+static void malloc_stress_test_do()
+{
+  int i = 0;
+
+  for(i = 0; i < TEST_MALLOC_TIMES; i++)
+  {
+    malloc_block[i] = (char *)malloc(TEST_BLOCK_SIZE*sizeof(char));
+  }
+
+  for(i = 0; i < TEST_MALLOC_TIMES; i++)
+  {
+    free(malloc_block[i]);
+    malloc_block[i] = NULL;
+  }
+}
+
+static void malloc_stress_test()
+{
+  clock_t time_start, time_stop;
+
+  time_start = clock();
+
+  malloc_stress_test_do();
+
+  time_stop = clock();
+
+  printf("Malloc test execution time: %f s\n", (double)(time_stop-time_start)/CLOCKS_PER_SEC);
+}
+
 // Entry point
 int main()
 {
   mem_pool_stress_test();
+
+  malloc_stress_test();
 
   return 0;
 }

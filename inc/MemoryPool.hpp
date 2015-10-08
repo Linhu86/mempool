@@ -32,9 +32,9 @@ class MemoryPool
      MemoryPool()
         : m_totalPoolSize(0),
           m_freePoolSize(0),
-          m_boundsCheck(1),
-          m_trashOnCreation(1),
-          m_trashOnAlloc(1),
+          m_boundsCheck(0),
+          m_trashOnCreation(0),
+          m_trashOnAlloc(0),
           m_trashOnFree(1)
           {};
 
