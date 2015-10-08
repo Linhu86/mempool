@@ -28,6 +28,11 @@ int Chunk :: name_set(const char *name)
 
 StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
 {
+  if(!sizeInBytes)
+  {
+    mem_debug_log("Can not create memory pool with size 0");
+  }
+
   m_poolSize = sizeInBytes;
 
   m_boundsCheck = boundsCheck;
@@ -36,7 +41,7 @@ StandardMemoryPool :: StandardMemoryPool(uint64 sizeInBytes, uint32 boundsCheck)
 
 #ifdef DEBUG_ON
   mem_debug_log("StandardPool Constructor initialization in address %p with size %lu\n", m_poolMemory, sizeInBytes);
-  printf("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d\n", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
+  mem_debug_log("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
   if(boundsCheck){
     mem_debug_log("Memory pool bounds check feature present.\n");
   }
@@ -362,7 +367,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
     {
       if(format == DUMP_HEX)
       {
-        fprintf(f, "[Address: %p] : %p ",ptr, *ptr);
+        fprintf(f, "[Address: %p] : 0x%x ",ptr, *ptr);
       }
       else if(format == DUMP_CHAR)
       {
@@ -390,8 +395,7 @@ void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 
   }
 
   fprintf(f, "\n\nMemory pool ----------------------------------\n");
-  printf("\n Successful to dump memory pool.\n");
-
+  mem_debug_log("Successful to dump memory pool.");
   fclose(f);
 }
 
@@ -414,7 +418,7 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
     {
       if(format == DUMP_HEX)
       {
-        printf("[Address: %p] : %p",ptr, *ptr);
+        printf("[Address: %p] : 0x%x",ptr, *ptr);
       }
       else if(format == DUMP_CHAR)
       {
