@@ -11,14 +11,16 @@
 
 #define DUMP_FILE_NAME "pool.xml"
 #define TEST_MALLOC_TIMES 18724
-#define TEST_BLOCK_NUM 40*5096  // Could allocate 11914 blocks
-#define TEST_POOL_VOL 1024*1024
+#define TEST_BLOCK_NUM 40*5096*1024UL  // Could allocate 11914 blocks
+#define TEST_POOL_VOL 1024*1024*1024UL
 #define TEST_BLOCK_SIZE 16
 
 static Chunk *block[TEST_BLOCK_NUM] = {};
 static StandardMemoryPool *pool = new StandardMemoryPool(TEST_POOL_VOL, 0);
 char str[] = "abcdefghijklmno";
 static char *malloc_block[TEST_MALLOC_TIMES] = {};
+static char *new_block[TEST_MALLOC_TIMES] = {};
+
 
 #ifdef TEST_DEBUG_ON
 #define test_debug_log(fmt, ...) printf("[%s]"#fmt"\n", __FUNCTION__, ##__VA_ARGS__)
@@ -223,7 +225,6 @@ static void mem_pool_stress_test_check()
 
 #ifdef TEST_DEBUG_ON
   printf("\n\n");
-  //pool->dumpToStdOut(DUMP_ELEMENT_PER_LINE, DUMP_HEX);
   pool->memory_block_list();
   print_block_array(block, TEST_BLOCK_NUM);
 #endif
@@ -302,7 +303,7 @@ static void mem_pool_stress_test_free_random(uint32 block_num)
 
 static void mem_pool_stress_test_free_squence(uint32 block_num)
 {
-  uint32 i = 0, block_free_idx = 0;
+  uint32 i = 0;
 
 #ifdef TEST_DEBUG_ON
   printf("\n\n\n\n");
@@ -375,7 +376,7 @@ static void mem_pool_stress_test()
 
  // mem_pool_stress_test_free_random(block_num);
 
-  mem_pool_stress_test_free_squence(block_num);
+//  mem_pool_stress_test_free_squence(block_num);
 
   time_stop = clock();
 
@@ -416,12 +417,45 @@ static void malloc_stress_test()
   printf("Malloc test execution time: %f s\n", (double)(time_stop-time_start)/CLOCKS_PER_SEC);
 }
 
+
+static void new_allocator_stress_test_do()
+{
+  int i = 0;
+
+  for(i = 0; i < TEST_MALLOC_TIMES; i++)
+  {
+    new_block[i] = new char[TEST_BLOCK_SIZE];
+  }
+
+  for(i = 0; i < TEST_MALLOC_TIMES; i++)
+  {
+    delete [] malloc_block[i];
+  }
+}
+
+static void new_allocator_stress_test()
+{
+  clock_t time_start, time_stop;
+
+  time_start = clock();
+
+  new_allocator_stress_test_do();
+
+  time_stop = clock();
+
+  printf("New allocator test execution time: %f s\n", (double)(time_stop-time_start)/CLOCKS_PER_SEC);
+}
+
+
+
 // Entry point
 int main()
 {
   mem_pool_stress_test();
 
   malloc_stress_test();
+
+  new_allocator_stress_test();
 
   return 0;
 }

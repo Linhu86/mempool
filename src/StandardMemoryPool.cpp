@@ -150,8 +150,6 @@ void *StandardMemoryPool :: allocate(uint64 size)
 
     if(freeBlock.m_next)
     {
-      dumpToFile("pool.xml", 4, DUMP_HEX);
-      dump_memory_block_list("block.xml");
       freeBlock.m_next->m_prev = (Chunk*)(blockData + requiredSize);
     }
 
