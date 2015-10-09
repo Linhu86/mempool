@@ -45,8 +45,9 @@ class StandardMemoryPool : public MemoryPool
     int integrityCheck() const;
     void dumpToFile(const std::string& fileName, const uint32 itemsPerLine, const uint32 format) const;
     void dumpToStdOut(const uint32 ElemInLine, const uint32 format) const;
-    void memory_block_list();
-    void memory_pool_info();
+    void memory_block_list() const;
+    void memory_pool_info() const;
+    void dump_memory_block_list(const std::string& fileName) const;
     static const uint8 s_minFreeBlockSize = 16;
     friend class MemoryPoolManager;
 

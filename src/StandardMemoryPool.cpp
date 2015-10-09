@@ -89,6 +89,8 @@ StandardMemoryPool :: ~StandardMemoryPool()
 void *StandardMemoryPool :: allocate(uint64 size)
 {
   mem_debug_log("Start to allocate block with size.");
+//  dumpToFile("pool.xml", 4, DUMP_HEX);
+//  memory_block_list();
 
 #ifdef MEM_DEBUG_ON
   memory_block_list();
@@ -148,6 +150,8 @@ void *StandardMemoryPool :: allocate(uint64 size)
 
     if(freeBlock.m_next)
     {
+      dumpToFile("pool.xml", 4, DUMP_HEX);
+      dump_memory_block_list("block.xml");
       freeBlock.m_next->m_prev = (Chunk*)(blockData + requiredSize);
     }
 
@@ -452,7 +456,7 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
 }
 
 
-void StandardMemoryPool :: memory_block_list()
+void StandardMemoryPool :: memory_block_list() const
 {
   uint32 i = 1;
   Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
@@ -463,11 +467,11 @@ void StandardMemoryPool :: memory_block_list()
     return;
   }
 
-  printf("Start to print the memory block list. Memory total size: %lu, Free memory size: %lu. \n\n\n", m_totalPoolSize, m_freePoolSize);
+  mem_debug_log("Start to print the memory block list. Memory total size: %lu, Free memory size: %lu. \n\n\n", m_totalPoolSize, m_freePoolSize);
 
   while(block)
   {
-    printf("[block: %d] address: %p name: %s Free: %d size:%d-->\n", i, block, block->m_name, block->m_free, block->m_userdataSize);
+    printf("[block: %d] address: %p name: %s free: %d size:%d-->\n", i, block, block->m_name, block->m_free, block->m_userdataSize);
     block = block->m_next;
     i++;
   }
@@ -476,7 +480,44 @@ void StandardMemoryPool :: memory_block_list()
 }
 
 
-void StandardMemoryPool :: memory_pool_info()
+void StandardMemoryPool :: dump_memory_block_list(const std::string& fileName) const
+{
+  FILE* f = NULL;
+  uint32 i = 1;
+  Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + s_boundsCheckSize : m_poolMemory);
+
+  if(block == NULL)
+  {
+    mem_error_log("block list is NULL.");
+    return;
+  }
+
+  mem_debug_log("Start to print the memory block list. Memory total size: %lu, Free memory size: %lu. \n\n\n", m_totalPoolSize, m_freePoolSize);
+
+  f = fopen(fileName.c_str(), "w+");
+
+  if(!f)
+  {
+    mem_error_log("File open error: %s", strerror(errno));
+    return;
+  }
+
+  fprintf(f, "Memory block list ------------------------------------------------------------------------------------------------\n\n");
+
+  while(block)
+  {
+    fprintf(f, "[block: %d] address: %p name: %s free: %d size:%d-->\n", i, block, block->m_name, block->m_free, block->m_userdataSize);
+    block = block->m_next;
+    i++;
+  }
+
+  fprintf(f, "[last block] NULL\n\n\n");
+
+  fclose(f);
+}
+
+
+void StandardMemoryPool :: memory_pool_info() const
 {
   mem_debug_log("Start to log memory pool information.");
 

@@ -14,4 +14,4 @@ mempool.SearchResults
 *.a
 mempool_test
 pool.xml
-
+block.xml
