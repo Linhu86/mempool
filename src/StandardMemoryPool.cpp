@@ -96,7 +96,7 @@ void *StandardMemoryPool :: allocate(uint64 size)
   memory_block_list();
 #endif
 
-  if(size > MAX_MEMPOOL_SIZE)
+  if(size > MAX_MEMPOOL_SIZE || size == 0)
   {
     mem_error_log("Wrong memory pool size.\n");
     return NULL;

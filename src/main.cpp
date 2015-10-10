@@ -10,9 +10,9 @@
 #include "memlog.hpp"
 
 #define DUMP_FILE_NAME "pool.xml"
-#define TEST_MALLOC_TIMES 18724
-#define TEST_BLOCK_NUM 40*5096*1024UL  // Could allocate 11914 blocks
-#define TEST_POOL_VOL 1024*1024*1024UL
+#define TEST_MALLOC_TIMES 1872400
+#define TEST_BLOCK_NUM 40*5096UL  // Could allocate 11914 blocks
+#define TEST_POOL_VOL 1024*1024UL
 #define TEST_BLOCK_SIZE 16
 
 static Chunk *block[TEST_BLOCK_NUM] = {};
