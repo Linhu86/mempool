@@ -17,8 +17,8 @@ LIBMEMPOOL_LIB  = -lmempool
 UNITEST_LIB = -lcppunit
 
 
-CFLAGS  += $(LIBXML_INCL) $(LIBMEMPOOL_INCL)
-LDFLAGS += $(LIBXML_LIB) $(LIBMEMPOOL_LIB)
+CFLAGS  += $(LIBMEMPOOL_INCL)
+LDFLAGS += -L. $(LIBMEMPOOL_LIB)
 
 #CFLAGS += -DMEM_DEBUG_ON
 #CFLAGS += -DMEM_ERROR_MSG_ON
@@ -46,10 +46,10 @@ libmempool.a: $(LIBMEMPOOLOBJS)
 	$(AR) $@ $^
 
 mempool_test: src/main.o
-	$(LINKER) $^ $(LIB_LINK_MODE) -L. $(LIBMEMPOOL_LIB) $(LDFLAGS) -g -o $@
+	$(LINKER) $^ $(LIB_LINK_MODE) -g -o $@ $(LDFLAGS)
 
-mempool_unitest: unit_test/MemoryPoolUnitTest.cpp
-	$(LINKER) $^ $(LIB_LINK_MODE) $(CFLAGS) $(LDFLAGS) $(UNITEST_LIB) -L. $(LIBMEMPOOL_LIB) -g -o $@
+mempool_unitest: unit_test/MemoryPoolUnitTest.o
+	$(LINKER) $^ $(LIB_LINK_MODE) $(CFLAGS) -g -o $@ $(UNITEST_LIB) $(LDFLAGS)
 
 clean:
 	@( $(RM) $(LIBXML_SRC)/*.o $(LIBMEMPOOL_SRC)/*.o vgcore.* core core.* $(TARGET) )

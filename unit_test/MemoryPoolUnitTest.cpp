@@ -38,28 +38,28 @@ protected:
     void testAllocation(void);
 
 private:
-    StandardMemoryPool *test_pool;
+    StandardMemoryPool *m_test_pool;
 };
 
 //-----------------------------------------------------------------------------
 
 void TestMemoryPool::testAllocation(void)
 {
-  CPPUNIT_ASSERT(NULL == test_pool->allocate(0));
-/*  CPPUNIT_ASSERT(NULL == test_pool->allocate(MAX_MEMPOOL_SIZE+1));
-  CPPUNIT_ASSERT(NULL == test_pool->allocate(TEST_POOL_VOL-1));
-  CPPUNIT_ASSERT(NULL == test_pool->allocate(TEST_POOL_VOL+1));
-  CPPUNIT_ASSERT(NULL != test_pool->allocate(16)); */
+  CPPUNIT_ASSERT(NULL == m_test_pool->allocate(0));
+  CPPUNIT_ASSERT(NULL == m_test_pool->allocate(MAX_MEMPOOL_SIZE+1));
+  CPPUNIT_ASSERT(NULL == m_test_pool->allocate(TEST_POOL_VOL-1));
+  CPPUNIT_ASSERT(NULL == m_test_pool->allocate(TEST_POOL_VOL+1));
+  CPPUNIT_ASSERT(NULL != m_test_pool->allocate(16));
 }
 
 void TestMemoryPool::setUp(void)
 {
-    StandardMemoryPool *test_pool = new StandardMemoryPool(TEST_POOL_VOL, 0);
+    m_test_pool = new StandardMemoryPool(TEST_POOL_VOL, 0);
 }
 
 void TestMemoryPool::tearDown(void)
 {
-    delete test_pool;
+    delete m_test_pool;
 }
 
 //-----------------------------------------------------------------------------
@@ -96,5 +96,5 @@ int main(int argc, char* argv[])
     // return 0 if tests were successful
     return collectedresults.wasSuccessful() ? 0 : 1;
 }
-          
+
 
