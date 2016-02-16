@@ -7,83 +7,87 @@
 //max memory pool size 2G.
 #define MAX_MEMPOOL_SIZE 2*1024*1024*1024UL
 #define DUMP_ELEMENT_PER_LINE 4
-#define BLOCK_NAME_LEN 16
+#define UCOM_POOL_NAME_LEN 16
 #define DEFAULT_BLOCK_NAME "unknown"
 #define MEMORY_POOL_BLOCK_NAME "pool"
 
+static const uint8 s_boundsCheckSize = 16;
+static const uint8 s_trashOnCreation = 0xCC;
 
-struct MemoryPool
+const uint8 s_startBound[16] = {'[','B','l','o','c','k','.','.','.','.','S','t','a','r','t',']'};
+const uint8 s_endBound[16]   = {'[','B','l','o','c','k','.','.','.','.','.','.','E','n','d',']'};
+
+
+
+typedef struct UComMemoryPool
 {
+  UComUInt32 *poolBase;
+  UComChar *name;
   UComUInt32 poolSize;
   UComUInt32 boundsCheck;
-  UComUInt32 poolBase;
-}MemoryPool_t;
+  UComUInt32 freePoolSize;
+  UComUInt32 totalPoolSize;
+  UComUInt32 trashOnCreation;
+} UComMemoryPool_t;
 
-int name_set(const char *name)
+typedef struct Chunk{
+  UComUInt32 userdataSize;
+  UComUInt32 freedataSize;
+  struct Chunk *prev;
+  struct Chunk *next;
+} Chunk_t;
+
+UComInt32 UComOsMemCreatePool(UComOsMem* mem, void* mem_area, UComUInt32 size)
 {
-  if(!name)
-  {
-    mem_error_log("memory block name is NULL.");
-    return FALSE;
-  }
+  UComBool res;
 
-  if(strlen(name) > BLOCK_NAME_LEN)
-  {
-    mem_error_log("memory block name length larger than 16.");
-    return FALSE;
-  }
+  UComMemoryPool_t params;
 
-  memset(m_name, '\0', BLOCK_NAME_LEN);
-  strncpy(m_name, name, strlen(name));
-
-  //Log
-  mem_debug_log("New set memory block name: %s", m_name);
-
-  return TRUE;
+  params.poolBase=mem_area;
+  params.poolSize=(UComUInt32)(size + UCOM_RTOS_DATA_POOL_YOCTO_HEADER_SIZE);
+  params.name="ucomPool";
+  params.boundsCheck = 0;
+  params.trashOnCreation = 1;
+  res=StandardMemoryPool(mem, &params);
+  return OSA2UComConvert(res);
 }
 
-UComInt32 StandardMemoryPool(UComInt32 sizeInBytes, UComInt32 boundsCheck)
+
+UComInt32 StandardMemoryPool(UComOsMem *mem, UComMemoryPool_t *params)
 {
-  if(!sizeInBytes)
-  {
-    mem_error_log("Can not create memory pool with size 0");
-  }
-
-  m_poolSize = sizeInBytes;
-
-  m_boundsCheck = boundsCheck;
-
-  m_poolMemory = new uint8[sizeInBytes];
+  UComUInt32 m_poolSize = params->poolSize;
+  UComUInt32 m_boundsCheck = params->boundsCheck;
+  UComUInt32 *m_poolBase = params->poolBase;
+  UComUInt32 *m_trashOnCreation = params->m_trashOnCreation;
+  UComUInt32 m_freePoolSize = m_poolSize - sizeof(UComMemoryPool_t);
+  UComUInt32  m_totalPoolSize = m_poolSize;
 
   //Log
-  mem_debug_log("StandardPool Constructor initialization in address %p with size %lu\n", m_poolMemory, sizeInBytes);
-  mem_debug_log("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
-
-  m_freePoolSize = sizeInBytes - sizeof(Chunk);
-  m_totalPoolSize = sizeInBytes;
+  mem_debug_log("StandardPool Constructor initialization in address %p with size %lu\n", m_poolBase, m_freePoolSize);
+//  mem_debug_log("StandardPool created with m_trashOnCreation:%d m_trashOnAlloc: %d  m_trashOnFree :%d m_boundsCheck %d", m_trashOnCreation, m_trashOnAlloc, m_trashOnFree, m_boundsCheck);
 
   // Trash it if required
   if(m_trashOnCreation)
   {
-    memset(m_poolMemory, s_trashOnCreation, sizeInBytes);
+    memset(m_poolBase, s_trashOnCreation, m_freePoolSize);
   }
 
   if(m_boundsCheck)
   {
     m_freePoolSize -= s_boundsCheckSize * 2;
-    Chunk freeChunk(sizeInBytes - sizeof(Chunk) - 2 * s_boundsCheckSize);
-    freeChunk.name_set(MEMORY_POOL_BLOCK_NAME);
-    freeChunk.write(m_poolMemory + s_boundsCheckSize);
-    memcpy(m_poolMemory, s_startBound, s_boundsCheckSize);
-    memcpy(m_poolMemory + sizeInBytes - s_boundsCheckSize, s_endBound, s_boundsCheckSize);
+    Chunk_t freeChunk;
+    freeChunk.m_freedataSize = m_freePoolSize - sizeof(Chunk_t) - 2 * s_boundsCheckSize;
+    memcpy(m_poolBase + s_boundsCheckSize, freeChunk, sizeof(Chunk_t));
+    memcpy(m_poolBase, s_startBound, s_boundsCheckSize);
+    memcpy(m_poolBase + m_freePoolSize - s_boundsCheckSize, s_endBound, s_boundsCheckSize);
     freeChunk.m_next = NULL;
     freeChunk.m_prev = NULL;
   }
   else
   {
-    Chunk freeChunk(sizeInBytes - sizeof(Chunk));
-    freeChunk.name_set(MEMORY_POOL_BLOCK_NAME);
-    freeChunk.write(m_poolMemory);
+    Chunk_t freeChunk;
+    freeChunk.m_freedataSize = m_freePoolSize - sizeof(Chunk);
+    memcpy(m_poolBase, freeChunk, sizeof(freeChunk));
     freeChunk.m_next = NULL;
     freeChunk.m_prev = NULL;
   }
@@ -93,14 +97,26 @@ UComInt32 StandardMemoryPool(UComInt32 sizeInBytes, UComInt32 boundsCheck)
 #endif
 }
 
-StandardMemoryPool :: ~StandardMemoryPool()
+StandardMemoryPoolDestroy()
 {
   mem_debug_log("StandardPool Deconstructor deconstruction.");
 
   delete [] m_poolMemory;
 }
 
-void *StandardMemoryPool :: allocate(uint64 size)
+
+UComInt32 UComOsMemAlloc(UComOsMem* mem, UComUInt32 size, void** ptr)
+{
+  UComUInt32 res;
+
+  OSSemaRef memRef=*(OsaRefT *)mem;
+
+  *ptr=OsaMemAlloc(memRef,(UINT32)size);
+  return OSA2UComConvert(res);
+}
+
+
+void allocate(UComUInt32 size)
 {
   mem_debug_log("Start to allocate block with size.");
 //  dumpToFile("pool.xml", 4, DUMP_HEX);
@@ -116,7 +132,7 @@ void *StandardMemoryPool :: allocate(uint64 size)
     return NULL;
   }
 
-  uint64 requiredSize = size + sizeof(Chunk);
+  UComUInt32 requiredSize = size + sizeof(Chunk_t);
 
   if(m_boundsCheck)
   {
@@ -212,7 +228,7 @@ void *StandardMemoryPool :: allocate(uint64 size)
 }
 
 
-int StandardMemoryPool :: free(void* ptr)
+int free(void* ptr)
 {
 #ifdef MEM_DEBUG_ON
 //    memory_block_list();
@@ -324,7 +340,7 @@ int StandardMemoryPool :: free(void* ptr)
 /**
 *	\brief		Make an integrity test whether the bounds check flag is true
 */
-int StandardMemoryPool :: integrityCheck() const
+int integrityCheck() const
 {
   if(m_boundsCheck == 1)
   {
@@ -351,7 +367,7 @@ int StandardMemoryPool :: integrityCheck() const
 /**
 *	\brief		Dump the memory state to file
 */
-void StandardMemoryPool :: dumpToFile(const std::string& fileName, const uint32 itemsPerLine, const uint32 format) const
+void dumpToFile(const std::string& fileName, const uint32 itemsPerLine, const uint32 format) const
 {
   FILE* f = NULL;
   uint32 i = 0, j = 0;
@@ -529,7 +545,7 @@ void StandardMemoryPool :: dump_memory_block_list(const std::string& fileName) c
 }
 
 
-void StandardMemoryPool :: memory_pool_info() const
+void memory_pool_info() const
 {
   mem_debug_log("Start to log memory pool information.");
 
