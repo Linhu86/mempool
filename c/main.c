@@ -14,31 +14,35 @@ int main()
   UComInt32 res;
   MemParam_t params;
 
-  MemoryPool_t **mem;
+  MemoryPool_t mem;
+
+  MemoryPool_t *p_mem = &mem;
+
+  MemoryPool_t ** pmem = &p_mem;
 
   UComUInt32 *ptr = NULL;
 
   UCOM_OSMEM_ALLOC_POOL_MEMAREA_STATIC(test1, 1024);
 
-  UComOsMemCreatePool(mem, test1, 1024);
+  UComOsMemCreatePool(pmem, test1, 1024);
 
-  UComOsMemAlloc(*mem, 200, (void **)&(ptr));
+  UComOsMemAlloc(*pmem, 200, (void **)&(ptr));
 
-  memory_pool_info(*mem);
-
-  UComOsMemFree(ptr);
-
-  UComOsMemAlloc(*mem, 100, (void **)&(ptr));
-
-  memory_pool_info(*mem);
+  memory_pool_info(*pmem);
 
   UComOsMemFree(ptr);
 
-  memory_pool_info(*mem);
+  UComOsMemAlloc(*pmem, 100, (void **)&(ptr));
 
-  dumpToFile("dump.txt", *mem, 8, DUMP_HEX);
+  memory_pool_info(*pmem);
 
-  UComOsMemDeletePool(*mem);
+  UComOsMemFree(ptr);
+
+  memory_pool_info(*pmem);
+
+  dumpToFile("dump.txt", *pmem, 8, DUMP_HEX);
+
+  UComOsMemDeletePool(*pmem);
 
   return 0;
 }

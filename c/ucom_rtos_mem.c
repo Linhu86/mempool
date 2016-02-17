@@ -59,6 +59,7 @@ UComInt32 UComOsMemCreatePool(MemoryPool_t ** mem, void* mem_area, UComUInt32 si
   params.trashOnFree = 1;
 
   res = MemoryPoolCreate(mem, &params);
+
   return res;
 }
 
@@ -493,7 +494,7 @@ void dumpToFile(const UComChar *fileName, MemoryPool_t *mem, const UComUInt32 it
 {
   FILE* f = NULL;
   UComUInt32 i = 0, j = 0;
-  UComUInt8 *ptr = (UComUInt8 *)mem;
+  UComUInt8 *ptr = mem->memParam.poolBase;
   UComUInt32 residue = mem->memParam.totalPoolSize%itemsPerLine;
 
   f = fopen(fileName, "w+");
