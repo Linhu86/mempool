@@ -200,17 +200,14 @@ UComInt32 MemoryPoolDestroy(MemoryPool_t *mem)
   return UCOM_SUCCESS;
 }
 
-/*
-UComInt32 UComOsMemAlloc(UComOsMem* mem, UComUInt32 size, void** ptr)
+
+UComInt32 UComOsMemAlloc(MemoryPool_t *mem, UComUInt32 size, void **ptr)
 {
-  UComUInt32 res;
+  *ptr = MemoryPoolAllocate(mem, size);
 
-  OSSemaRef memRef=*(OsaRefT *)mem;
-
-  *ptr=OsaMemAlloc(memRef,(UINT32)size);
-  return OSA2UComConvert(res);
+  return UCOM_SUCCESS;
 }
-*/
+
 
 void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
 {
