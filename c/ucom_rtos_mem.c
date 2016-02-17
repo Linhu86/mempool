@@ -248,7 +248,6 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
 
   while(block)
   {
-//     printf("--------------------->block->free %d, block->userdataSize: %u \n", block->free, block->userdataSize);
      if(block->free == 1 && block->userdataSize >= requiredSize)
      {
         break;
@@ -362,7 +361,7 @@ int MemoryPoolFree(void *ptr)
 
   MemoryPool_t *mem = block->pool;
 
-  if(block->free)
+  if(block->free  || block == NULL)
   {
     ucom_log("Block is already freed.\n");
     return UCOM_FAILURE;
@@ -438,6 +437,7 @@ int MemoryPoolFree(void *ptr)
 
   Chunk_t freeBlock;
   freeBlock.userdataSize= freeUserDataSize;
+  freeBlock.pool = mem;
   freeBlock.prev = prev;
   freeBlock.next = next;
   freeBlock.free = 1;
