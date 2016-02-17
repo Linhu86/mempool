@@ -248,6 +248,7 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
 
   while(block)
   {
+//     printf("--------------------->block->free %d, block->userdataSize: %u \n", block->free, block->userdataSize);
      if(block->free == 1 && block->userdataSize >= requiredSize)
      {
         break;
@@ -279,6 +280,7 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
     Chunk_t freeBlock;
     freeBlock.userdataSize= freeUserDataSize;
     freeBlock.pool = mem;
+    freeBlock.free = 1;
     freeBlock.next = block->next;
     freeBlock.prev = block;
 
@@ -438,6 +440,7 @@ int MemoryPoolFree(void *ptr)
   freeBlock.userdataSize= freeUserDataSize;
   freeBlock.prev = prev;
   freeBlock.next = next;
+  freeBlock.free = 1;
   memcpy(freeBlockStart, &freeBlock, sizeof(freeBlock));
 
   // Move the memory around if guards are needed

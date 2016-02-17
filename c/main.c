@@ -24,6 +24,14 @@ int main()
 
   UComOsMemAlloc(*mem, 200, (void **)&(ptr));
 
+  memory_pool_info(*mem);
+
+  UComOsMemFree(ptr);
+
+  UComOsMemAlloc(*mem, 100, (void **)&(ptr));
+
+  memory_pool_info(*mem);
+
   UComOsMemFree(ptr);
 
   memory_pool_info(*mem);
