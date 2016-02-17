@@ -66,7 +66,7 @@ typedef enum
 
 #define DEFAULT_CHUNK_NAME "Header";
 
-UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params);
+UComInt32 UComOsMemCreatePool(MemoryPool_t ** mem, void* mem_area, UComUInt32 size);
 
 UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params);
 
