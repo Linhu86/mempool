@@ -16,15 +16,21 @@ int main()
 
   MemoryPool_t **mem;
 
+  UComUInt32 *ptr = NULL;
+
   UCOM_OSMEM_ALLOC_POOL_MEMAREA_STATIC(test1, 1024);
 
   UComOsMemCreatePool(mem, test1, 1024);
+
+  UComOsMemAlloc(*mem, 200, (void **)&(ptr));
+
+  UComOsMemFree(ptr);
 
   memory_pool_info(*mem);
 
   dumpToFile("dump.txt", *mem, 8, DUMP_HEX);
 
-  MemoryPoolDestroy(*mem);
+  UComOsMemDeletePool(*mem);
 
   return 0;
 }

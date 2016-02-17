@@ -45,9 +45,9 @@ typedef struct MemoryPool
 
 typedef struct Chunk{
   UComUInt32 userdataSize;
-  UComUInt32 freedataSize;
   UComUInt32 free;
   UComChar *name;
+  struct MemoryPool *pool;
   struct Chunk *prev;
   struct Chunk *next;
 } Chunk_t;
@@ -68,13 +68,19 @@ typedef enum
 
 UComInt32 UComOsMemCreatePool(MemoryPool_t ** mem, void* mem_area, UComUInt32 size);
 
+UComInt32 UComOsMemAlloc(MemoryPool_t *mem, UComUInt32 size, void **ptr);
+
+UComInt32 UComOsMemFree(void *ptr);
+
+
+
 UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params);
 
 UComInt32 MemoryPoolDestroy(MemoryPool_t *mem);
 
 void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size);
 
-int MemoryPoolFree(MemoryPool_t *mem, void* ptr);
+int MemoryPoolFree(void* ptr);
 
 int integrityCheck(MemoryPool_t *mem);
 

@@ -102,11 +102,12 @@ UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params)
   first_chunk.next = NULL;
   first_chunk.prev = NULL;
   first_chunk.free = 1;
+  first_chunk.pool = p_mem_pool;
 
   if(boundsCheck)
   {
     freePoolSize -= s_boundsCheckSize * 2;
-    first_chunk.freedataSize = freePoolSize - 2 * s_boundsCheckSize;
+    first_chunk.userdataSize= freePoolSize - 2 * s_boundsCheckSize;
     memcpy(poolBase_offset + s_boundsCheckSize, &first_chunk, MEMORY_CHUNK_HEADER_SIZE);
     memcpy(poolBase_offset, s_startBound, s_boundsCheckSize);
     memcpy(poolBase_offset + freePoolSize - s_boundsCheckSize, s_endBound, s_boundsCheckSize);
@@ -114,7 +115,7 @@ UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params)
   }
   else
   {
-    first_chunk.freedataSize = freePoolSize;
+    first_chunk.userdataSize = freePoolSize;
     memcpy(poolBase_offset, &first_chunk, sizeof(first_chunk));
     p_mem_pool->header = (Chunk_t *)poolBase_offset;
   }
@@ -131,9 +132,9 @@ UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params)
   /* Insert new created poolinto mempool list.*/
   if(NULL == p_mempoolHeader)
   {
-    p_mempoolHeader = p_mem_pool;
     p_mem_pool->next = NULL;
     p_mem_pool->prev = NULL;
+    p_mempoolHeader = p_mem_pool;
   }
   else if(NULL == p_mempoolHeader->next)
   {
@@ -157,12 +158,16 @@ UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params)
 */
 }
 
+UComInt32 UComOsMemDeletePool(MemoryPool_t *mem)
+{
+  MemoryPoolDestroy(mem);
+}
+
 UComInt32 MemoryPoolDestroy(MemoryPool_t *mem)
 {
-  ucom_log("StandardPool Deconstructor deconstruction.\n");
-
   /* Remove the memory pool from list */
   MemoryPool_t *ptr = p_mempoolHeader;
+  UComInt32 ret = UCOM_FAILURE;
 
   if(ptr == NULL)
   {
@@ -188,18 +193,26 @@ UComInt32 MemoryPoolDestroy(MemoryPool_t *mem)
         ptr->prev = NULL;
         ptr->next = NULL;
       }
+
+      ucom_log("find pool %p to delete.\n", mem);
+      memset(mem, '\0', mem->memParam.totalPoolSize);
+      mem = NULL;
+      ret = UCOM_SUCCESS;
       break;
     }
     ptr = ptr->next;
   }  
 
-  memset(mem, '\0', mem->memParam.totalPoolSize);
-
-  mem = NULL;
 
   return UCOM_SUCCESS;
 }
 
+
+typedef struct MemBlock
+{
+  MemoryPool_t *mem;
+  UComUInt8 * mem_addr;
+} MemBlock_t;
 
 UComInt32 UComOsMemAlloc(MemoryPool_t *mem, UComUInt32 size, void **ptr)
 {
@@ -207,7 +220,6 @@ UComInt32 UComOsMemAlloc(MemoryPool_t *mem, UComUInt32 size, void **ptr)
 
   return UCOM_SUCCESS;
 }
-
 
 void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
 {
@@ -232,18 +244,16 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
     requiredSize += s_boundsCheckSize *2;
   }
 
-  Chunk_t *block = (Chunk_t *)(mem->memParam.boundsCheck == 1 ? mem->memParam.poolBase + s_boundsCheckSize : mem->memParam.poolBase);
+  Chunk_t *block = mem->header;
 
   while(block)
   {
-     if(block->free && block->userdataSize >= requiredSize)
+     if(block->free == 1 && block->userdataSize >= requiredSize)
      {
         break;
      }
      block = block->next;
   }
-
-  UComUInt8 * blockData = (UComUInt8 *)block;
 
   // If block is found, return NULL
   if(!block)
@@ -253,8 +263,10 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
   }
   else
   {
-    ucom_log("First free block address: %p.\n", blockData);
+    ucom_log("First free block address: %p.\n", block);
   }
+
+  UComUInt8 * blockData = (UComUInt8 *)block;
 
   // If the block is valid, create a new free block with what remains of the block memory
   UComUInt32 freeUserDataSize = block->userdataSize - requiredSize;
@@ -265,7 +277,8 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
   if(freeUserDataSize > BLOCK_SIZE_MIN)
   {
     Chunk_t freeBlock;
-    freeBlock.freedataSize = freeUserDataSize;
+    freeBlock.userdataSize= freeUserDataSize;
+    freeBlock.pool = mem;
     freeBlock.next = block->next;
     freeBlock.prev = block;
 
@@ -323,7 +336,12 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
 }
 
 
-int MemoryPoolFree(MemoryPool_t *mem, void* ptr)
+UComInt32 UComOsMemFree(void *ptr)
+{
+  MemoryPoolFree(ptr);
+}
+
+int MemoryPoolFree(void *ptr)
 {
 /*
 #ifdef MEM_DEBUG_ON
@@ -339,6 +357,8 @@ int MemoryPoolFree(MemoryPool_t *mem, void* ptr)
   }
 
   Chunk_t *block = (Chunk_t *)((UComUInt8 *)ptr - MEMORY_CHUNK_HEADER_SIZE);
+
+  MemoryPool_t *mem = block->pool;
 
   if(block->free)
   {
@@ -415,7 +435,7 @@ int MemoryPoolFree(MemoryPool_t *mem, void* ptr)
   freeUserDataSize = (mem->memParam.boundsCheck == 1) ? freeUserDataSize - s_boundsCheckSize * 2 : freeUserDataSize;
 
   Chunk_t freeBlock;
-  freeBlock.freedataSize = freeUserDataSize;
+  freeBlock.userdataSize= freeUserDataSize;
   freeBlock.prev = prev;
   freeBlock.next = next;
   memcpy(freeBlockStart, &freeBlock, sizeof(freeBlock));
