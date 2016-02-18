@@ -52,7 +52,7 @@ UComInt32 UComOsMemCreatePool(MemoryPool_t ** mem, void* mem_area, UComUInt32 si
   MemParam_t params;
 
   params.poolBase = (UComUInt8 *)mem_area;
-  params.totalPoolSize=(UComUInt32)(1024 + MEMORY_POOL_HEADER_SIZE + MEMORY_CHUNK_HEADER_SIZE);
+  params.totalPoolSize=(UComUInt32)(size + MEMORY_POOL_HEADER_SIZE + MEMORY_CHUNK_HEADER_SIZE);
   params.name="ucomPool";
   params.boundsCheck = 0;
   params.trashOnCreation = 1;
@@ -562,26 +562,26 @@ void dumpToFile(const UComChar *fileName, MemoryPool_t *mem, const UComUInt32 it
   fclose(f);
 }
 
-/*
+
 //format could be hex or char.
-void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) const
+void dumpToStdOut(MemoryPool_t *mem, UComUInt32 ElemInLine, const UComInt32 format)
 {
-  uint32 i = 0, j = 0;
-  uint32 residue = 0;
-  uint8 *ptr = m_poolMemory;
+  UComUInt32 i = 0, j = 0;
+  UComUInt32 residue = 0;
+  UComUInt8 *ptr = mem->memParam.poolBase;
 
   printf("\n\n");
 
-  mem_debug_log("\n\nStart to dump memory pool.");
-  mem_debug_log("Type: Standard Memory");
-  mem_debug_log("Total Size: %lu", m_totalPoolSize);
-  mem_debug_log("Free Size: %lu", m_freePoolSize);
+  ucom_log("\n\nStart to dump memory pool.");
+  ucom_log("Type: Standard Memory");
+  ucom_log("Total Size: %u", mem->memParam.totalPoolSize);
+  ucom_log("Free Size: %u", mem->memParam.freePoolSize);
 
   printf("\n\nMemory pool ------------------------------------------------------------------------------------------------\n\n");
 
-  residue = m_poolSize%ElemInLine;
+  residue = mem->memParam.totalPoolSize%ElemInLine;
 
-  for(i = 0; i < m_poolSize/ElemInLine; i ++)
+  for(i = 0; i < mem->memParam.totalPoolSize/ElemInLine; i ++)
   {
     for(j = 0; j < ElemInLine; j++)
     {
@@ -595,7 +595,7 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
       }
       else
       {
-        mem_error_log("Error dump format.\n");
+        ucom_log("Error dump format.\n");
         return;
       }
       ptr ++;
@@ -614,35 +614,35 @@ void StandardMemoryPool :: dumpToStdOut(uint32 ElemInLine, const uint32 format) 
   }
 
   printf("\n\nMemory pool ------------------------------------------------------------------------------------------------\n");
-  mem_debug_log("Finish to dump memory pool.");
+  ucom_log("Finish to dump memory pool.");
 
   printf("\n\n");
 }
 
 
-void StandardMemoryPool :: memory_block_list() const
+void memory_block_list(MemoryPool_t *mem)
 {
-  uint32 i = 1;
-  Chunk *block = (Chunk *)(m_boundsCheck == 1 ? m_poolMemory + boundsCheckSize : m_poolMemory);
+  UComUInt32 i = 1;
+  Chunk_t *block = (Chunk_t *)(mem->memParam.boundsCheck == 1 ? mem->memParam.poolBase + boundsCheckSize : mem->memParam.poolBase);
 
   if(block == NULL)
   {
-    mem_error_log("block list is NULL.");
+    ucom_log("block list is NULL.");
     return;
   }
 
-  mem_debug_log("Start to print the memory block list. Memory total size: %lu, Free memory size: %lu. \n\n\n", m_totalPoolSize, m_freePoolSize);
+  ucom_log("Start to print the memory block list. Memory total size: %u, Free memory size: %u. \n\n\n", mem->memParam.totalPoolSize, mem->memParam.freePoolSize);
 
   while(block)
   {
-    printf("[block: %d] address: %p name: %s free: %d size:%d-->\n", i, block, block->m_name, block->m_free, block->m_userdataSize);
-    block = block->m_next;
+    printf("[block: %d] address: %p name: %s free: %d size:%d-->\n", i, block, block->name, block->free, block->userdataSize);
+    block = block->next;
     i++;
   }
 
   printf("[last block] NULL\n\n\n");
 }
-*/
+
 
 
 void dump_memory_block_list(const UComChar* fileName, MemoryPool_t *mem)

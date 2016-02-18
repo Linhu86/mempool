@@ -72,8 +72,6 @@ UComInt32 UComOsMemAlloc(MemoryPool_t *mem, UComUInt32 size, void **ptr);
 
 UComInt32 UComOsMemFree(void *ptr);
 
-
-
 UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params);
 
 UComInt32 MemoryPoolDestroy(MemoryPool_t *mem);
