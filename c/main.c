@@ -35,6 +35,8 @@ int main()
 
   UComOsMemAlloc(*pmem, 200, (void **)&(ptr));
 
+  UComOsMemAlloc(*pmem, 200, (void **)&(ptr2));
+
   memory_pool_info(*pmem);
 
   UComOsMemFree(ptr);

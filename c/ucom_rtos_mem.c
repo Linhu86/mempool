@@ -100,7 +100,7 @@ UComInt32 MemoryPoolCreate(MemoryPool_t **mem, MemParam_t *params)
     memset(poolBase, s_trashOnCreation, totalPoolSize);
   }
 
-  first_chunk.name = DEFAULT_CHUNK_NAME;
+  first_chunk.name = DEFAULT_FIRST_CHUNK_NAME;
   first_chunk.next = NULL;
   first_chunk.prev = NULL;
   first_chunk.free = 1;
@@ -291,6 +291,7 @@ void *MemoryPoolAllocate(MemoryPool_t *mem, UComUInt32 size)
   if(freeUserDataSize > BLOCK_SIZE_MIN)
   {
     Chunk_t freeBlock;
+    freeBlock.name = DEFAULT_CHUNK_NAME;
     freeBlock.userdataSize= freeUserDataSize;
     freeBlock.pool = mem;
     freeBlock.free = 1;
@@ -358,13 +359,6 @@ UComInt32 UComOsMemFree(void *ptr)
 
 int MemoryPoolFree(void *ptr)
 {
-/*
-#ifdef MEM_DEBUG_ON
-//    memory_block_list();
-#endif
-*/
-
-  // is a valid node?
   if(!ptr)
   {
     ucom_log("Block pointer to free is not valid.\n");
@@ -443,6 +437,7 @@ int MemoryPoolFree(void *ptr)
   freeUserDataSize = (mem->memParam.boundsCheck == 1) ? freeUserDataSize - boundsCheckSize * 2 : freeUserDataSize;
 
   Chunk_t freeBlock;
+  freeBlock.name = DEFAULT_CHUNK_NAME;
   freeBlock.userdataSize= freeUserDataSize;
   freeBlock.pool = mem;
   freeBlock.prev = prev;
@@ -456,10 +451,6 @@ int MemoryPoolFree(void *ptr)
     memcpy(freeBlockStart - boundsCheckSize, s_startBound, boundsCheckSize);
     memcpy(freeBlockStart + MEMORY_CHUNK_HEADER_SIZE + freeUserDataSize, s_endBound, boundsCheckSize);
   }
-
-#ifdef MEM_DEBUG_ON
-//  memory_block_list();
-#endif
 
   return UCOM_SUCCESS;
 }
@@ -623,7 +614,7 @@ void dumpToStdOut(MemoryPool_t *mem, UComUInt32 ElemInLine, const UComInt32 form
 void memory_block_list(MemoryPool_t *mem)
 {
   UComUInt32 i = 1;
-  Chunk_t *block = (Chunk_t *)(mem->memParam.boundsCheck == 1 ? mem->memParam.poolBase + boundsCheckSize : mem->memParam.poolBase);
+  Chunk_t *block = mem->header;
 
   if(block == NULL)
   {
@@ -635,7 +626,7 @@ void memory_block_list(MemoryPool_t *mem)
 
   while(block)
   {
-    printf("[block: %d] address: %p name: %s free: %d size:%d-->\n", i, block, block->name, block->free, block->userdataSize);
+    printf("[block: %d] address: %p, name: %s, free: %d size:%d -->\n", i, block, block->name, block->free, block->userdataSize);
     block = block->next;
     i++;
   }
@@ -649,7 +640,7 @@ void dump_memory_block_list(const UComChar* fileName, MemoryPool_t *mem)
 {
   FILE* f = NULL;
   UComInt32 i = 1;
-  Chunk_t *block = (Chunk_t *)(mem->memParam.boundsCheck == 1 ? mem->memParam.poolBase + MEMORY_POOL_HEADER_SIZE + boundsCheckSize : mem->memParam.poolBase + MEMORY_POOL_HEADER_SIZE);
+  Chunk_t *block = mem->header;
 
   if(block == NULL)
   {
@@ -702,6 +693,9 @@ void memory_pool_info(MemoryPool_t *mem)
   ucom_log("Trash on creation: %d\n", mem->memParam.trashOnCreation);
 
   ucom_log("Trash on free: %d\n", mem->memParam.trashOnFree);
+
+  memory_block_list(mem);
+
 }
 
 

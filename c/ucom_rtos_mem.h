@@ -5,10 +5,10 @@
 #define MAX_MEMPOOL_SIZE 2*1024*1024*1024UL
 #define DUMP_ELEMENT_PER_LINE 4
 #define UCOM_POOL_NAME_LEN 16
-#define DEFAULT_BLOCK_NAME "unknown"
 #define MEMORY_POOL_BLOCK_NAME "pool"
 #define BLOCK_SIZE_MIN 16
-
+#define DEFAULT_FIRST_CHUNK_NAME "Header";
+#define DEFAULT_CHUNK_NAME "unknown"
 
 typedef unsigned int UComUInt32;
 typedef int UComInt32;
@@ -59,12 +59,10 @@ typedef enum
   DUMP_CHAR
 } dump_type;
 
-
 #define MEMORY_POOL_HEADER_SIZE sizeof(MemoryPool_t)
 
 #define MEMORY_CHUNK_HEADER_SIZE sizeof(Chunk_t)
 
-#define DEFAULT_CHUNK_NAME "Header";
 
 UComInt32 UComOsMemCreatePool(MemoryPool_t ** mem, void* mem_area, UComUInt32 size);
 
